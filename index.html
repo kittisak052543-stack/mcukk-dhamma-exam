@@ -2780,8 +2780,58 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-function init(){
+async function init(){
+  try {
 
+    const response =
+      await fetch(
+        API_URL + '?api=bootstrap',
+        {
+          method: 'GET',
+          cache: 'no-store'
+        }
+      );
+
+    if (!response.ok) {
+      throw new Error(
+        'เชื่อมต่อ API ไม่สำเร็จ: HTTP ' +
+        response.status
+      );
+    }
+
+    const result =
+      await response.json();
+
+    if (
+      !result ||
+      !result.success ||
+      !result.data
+    ) {
+      throw new Error(
+        result && result.error
+          ? result.error
+          : 'API ไม่ส่งข้อมูลกลับมา'
+      );
+    }
+
+    BOOTSTRAP =
+      result.data;
+
+  } catch (error) {
+
+    console.error(
+      'BOOTSTRAP API ERROR:',
+      error
+    );
+
+    showToast(
+      'ไม่สามารถโหลดข้อมูลระบบจาก Google Sheets ได้',
+      'error'
+    );
+
+    return;
+  }
+      
   document
     .getElementById('logo')
     .src =
