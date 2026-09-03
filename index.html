@@ -3332,13 +3332,13 @@ async function init(){
   try {
 
     const result =
-  await apiGetJsonp(
-    {
-      api:
-        'bootstrap'
-    },
-    15000
-  );
+      await apiGetJsonp(
+        {
+          api:
+            'bootstrap'
+        },
+        15000
+      );
 
 
     if (
@@ -3405,20 +3405,27 @@ async function init(){
 
 
     if (
-  !hasUsableBootstrap
-) {
+      !hasUsableBootstrap
+    ) {
 
-  console.error(
-    'BOOTSTRAP API ERROR:',
-    error
-  );
+      console.error(
+        'BOOTSTRAP API ERROR:',
+        error
+      );
 
-  showToast(
-    'ไม่สามารถโหลดข้อมูลระบบจาก Google Sheets ได้ กรุณารีเฟรชหน้าอีกครั้ง',
-    'error'
-  );
+      showToast(
+        'ไม่สามารถโหลดข้อมูลระบบจาก Google Sheets ได้ กรุณารีเฟรชหน้าอีกครั้ง',
+        'error'
+      );
 
-}
+    } else {
+
+      console.warn(
+        'BOOTSTRAP BACKGROUND REFRESH FAILED; ใช้ข้อมูล Cache ต่อไป:',
+        error
+      );
+
+    }
 
   }
 
