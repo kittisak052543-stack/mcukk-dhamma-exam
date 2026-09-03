@@ -3363,52 +3363,146 @@ async function submitForm(){
     }
 
 
-    const response =
-  await fetch(
-    API_URL,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type':
-          'text/plain;charset=utf-8'
-      },
-      body: JSON.stringify({
-        action:
-          'submitRegistration',
+const requestId =
+  (
+    crypto &&
+    typeof crypto.randomUUID === 'function'
+  )
+    ? crypto.randomUUID()
+    : (
+        Date.now().toString(36) +
+        Math.random().toString(36).slice(2)
+      );
 
-        payload:
-          payload
-      })
-    }
+
+await fetch(
+  API_URL,
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type':
+        'text/plain;charset=utf-8'
+    },
+    body: JSON.stringify({
+      action:
+        'submitRegistration',
+
+      requestId:
+        requestId,
+
+      payload:
+        payload
+    })
+  }
+).catch(
+  error => {
+    console.warn(
+      'POST response redirect:',
+      error
+    );
+  }
+);
+
+
+/*
+ * รอให้ Apps Script บันทึกข้อมูล
+ * แล้วตรวจผลด้วย GET
+ */
+let registrationResult =
+  null;
+
+for(
+  let attempt = 0;
+  attempt < 10;
+  attempt++
+){
+
+  await new Promise(
+    resolve =>
+      setTimeout(
+        resolve,
+        1000
+      )
   );
 
-if (!response.ok) {
+
+  const statusResponse =
+    await fetch(
+      API_URL +
+      '?api=registrationStatus&requestId=' +
+      encodeURIComponent(
+        requestId
+      ),
+      {
+        method: 'GET',
+        cache: 'no-store'
+      }
+    );
+
+
+  if(
+    !statusResponse.ok
+  ){
+    continue;
+  }
+
+
+  const statusResult =
+    await statusResponse.json();
+
+
+  if(
+    statusResult &&
+    statusResult.success &&
+    statusResult.data &&
+    statusResult.data.status === 'completed'
+  ){
+
+    registrationResult =
+      statusResult.data.result;
+
+    break;
+  }
+
+
+  if(
+    statusResult &&
+    statusResult.success &&
+    statusResult.data &&
+    statusResult.data.status === 'pending'
+  ){
+
+    continue;
+  }
+
+
+  if(
+    statusResult &&
+    statusResult.success === false
+  ){
+
+    throw new Error(
+      statusResult.error ||
+      'ไม่สามารถตรวจสอบผลการสมัครได้'
+    );
+  }
+
+}
+
+
+if(
+  !registrationResult
+){
 
   throw new Error(
-    'เชื่อมต่อระบบบันทึกข้อมูลไม่สำเร็จ: HTTP ' +
-    response.status
+    'บันทึกข้อมูลแล้ว แต่ไม่สามารถรับผลการสมัครกลับมาได้'
   );
 
 }
 
-const result =
-  await response.json();
-
-if (
-  !result ||
-  !result.success
-) {
-
-  throw new Error(
-    result && result.error
-      ? result.error
-      : 'ไม่สามารถบันทึกข้อมูลได้'
-  );
-
-}
 
 handleSubmitSuccess(
-  result.data
+  registrationResult
 );
 
   }catch(error){
