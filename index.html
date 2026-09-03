@@ -2341,12 +2341,16 @@ td{
              id="applicationNo">
         </div>
 
+        <div id="successDetails"
+             style="margin:18px auto 14px;max-width:620px;text-align:left;background:#f8fbff;border:1px solid #dbeafe;border-radius:16px;padding:18px 20px;">
+        </div>
+
         <p>
           ระบบบันทึกข้อมูลการสมัครเรียบร้อยแล้ว
         </p>
 
         <p style="font-size:12px;color:#718096;">
-          กรุณาบันทึกเลขที่สมัครไว้สำหรับใช้ตรวจสอบข้อมูล
+          กรุณาบันทึกหรือแคปหน้าจอนี้ไว้สำหรับใช้ตรวจสอบข้อมูลการสมัคร
         </p>
 
         <button
@@ -2819,7 +2823,7 @@ function waitMs(ms){
  */
 function apiGetJsonp(
   params,
-  timeoutMs = 5000
+  timeoutMs = 12000
 ){
 
   return new Promise(
@@ -2834,159 +2838,103 @@ function apiGetJsonp(
           .slice(2);
 
       let settled = false;
+      let cleanupTimer = null;
+      let timer = null;
 
       const script =
-        document.createElement(
-          'script'
-        );
+        document.createElement('script');
 
-      let cleanupTimer = null;
-
-      const cleanup = (
-        removeCallback = true
-      ) => {
-
-        clearTimeout(
-          timer
-        );
-
-        if (
-          cleanupTimer
-        ) {
-          clearTimeout(
-            cleanupTimer
-          );
-          cleanupTimer = null;
-        }
-
-        script.remove();
-
-        if (
-          removeCallback
-        ) {
+      const deferDeleteCallback = () => {
+        clearTimeout(cleanupTimer);
+        cleanupTimer = setTimeout(() => {
           try {
-            delete window[
-              callbackName
-            ];
+            delete window[callbackName];
           } catch (error) {
-            window[
-              callbackName
-            ] = undefined;
+            window[callbackName] = undefined;
           }
-        }
-
+        }, 60000);
       };
 
+      const removeScript = () => {
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+      };
 
-      const finish = (
-        fn,
-        value
-      ) => {
-
-        if (settled) return;
+      window[callbackName] = data => {
+        if (settled) {
+          return;
+        }
 
         settled = true;
-
-        cleanup();
-
-        fn(value);
+        clearTimeout(timer);
+        removeScript();
+        deferDeleteCallback();
+        resolve(data);
       };
-
-
-      window[
-        callbackName
-      ] = data => {
-
-        finish(
-          resolve,
-          data
-        );
-
-      };
-
 
       script.onerror = () => {
+        if (settled) {
+          return;
+        }
 
-        finish(
-          reject,
+        settled = true;
+        clearTimeout(timer);
+        removeScript();
+
+        /*
+         * เก็บ callback เป็น no-op ชั่วคราว
+         * เพื่อป้องกัน late JSONP response
+         * ไม่ให้เกิด ReferenceError: callback is not defined
+         */
+        window[callbackName] = () => {};
+        deferDeleteCallback();
+
+        reject(
           new Error(
             'ไม่สามารถเชื่อมต่อ API ได้'
           )
         );
-
       };
 
-
-      const query = new URLSearchParams(
-        {
-          ...params,
-          callback:
-            callbackName,
-          _: String(
-            Date.now()
-          )
-        }
-      );
-
+      const query = new URLSearchParams({
+        ...params,
+        callback: callbackName,
+        _: String(Date.now())
+      });
 
       script.src =
-        API_URL +
-        '?' +
-        query.toString();
+        API_URL + '?' + query.toString();
 
       script.async = true;
 
+      timer = setTimeout(() => {
+        if (settled) {
+          return;
+        }
 
-      const timer =
-        setTimeout(
-          () => {
+        settled = true;
+        removeScript();
 
-            if (settled) {
-              return;
-            }
+        /*
+         * ห้ามลบ callback ทันที
+         * เพราะ Apps Script อาจตอบกลับช้าหลัง timeout
+         */
+        window[callbackName] = () => {};
+        deferDeleteCallback();
 
-            settled = true;
-
-            /*
-             * อย่าลบ callback ทันทีเมื่อ timeout
-             *
-             * Apps Script Web App อาจตอบกลับช้าหลังจาก
-             * timeout ของ Browser ได้ หากลบ callback ทันที
-             * script ที่มาถึงภายหลังจะกลายเป็น
-             * ReferenceError: callback is not defined
-             */
-            script.remove();
-
-            cleanupTimer =
-              setTimeout(
-                () => {
-                  cleanup(
-                    true
-                  );
-                },
-                15000
-              );
-
-            reject(
-              new Error(
-                'API ตอบสนองช้าเกินกำหนด'
-              )
-            );
-
-          },
-          timeoutMs
+        reject(
+          new Error(
+            'API ตอบสนองช้าเกินกำหนด'
+          )
         );
+      }, timeoutMs);
 
-
-      document
-        .head
-        .appendChild(
-          script
-        );
-
+      document.head.appendChild(script);
     }
   );
 }
+
 
 
 /*
@@ -3097,7 +3045,7 @@ async function apiPostAndWait(
             requestId:
               requestId
           },
-          8000
+          20000
         );
 
 
@@ -3981,13 +3929,13 @@ async function submitForm(){
             requestId,
 
           maxAttempts:
-            24,
+            10,
 
           initialDelay:
-            200,
+            500,
 
           maxDelay:
-            800,
+            1000,
 
           timeoutMessage:
             'ระบบใช้เวลาบันทึกข้อมูลนานเกินกำหนด กรุณาตรวจสอบเลขบัตรประชาชนก่อนลองใหม่'
@@ -4369,6 +4317,36 @@ function handleSubmitSuccess(result){
     .textContent =
       'เลขที่สมัคร: ' +
       result.applicationNo;
+
+
+  const details =
+    document.getElementById(
+      'successDetails'
+    );
+
+  if(details){
+
+    const row = (label, value) => {
+      if(!value) return '';
+
+      return `
+        <div style="display:flex;gap:14px;padding:8px 0;border-bottom:1px solid #eaf0f7;">
+          <div style="min-width:150px;font-weight:700;color:#334155;">${label}</div>
+          <div style="flex:1;color:#0f172a;word-break:break-word;">${escapeHtml(String(value))}</div>
+        </div>
+      `;
+    };
+
+    details.innerHTML =
+      row('ชื่อผู้สมัคร', result.applicantName) +
+      row('ประเภทผู้สมัคร', result.applicantType) +
+      row('ระดับธรรมศึกษา', result.level) +
+      row('หลักสูตร', result.program) +
+      row('สาขาวิชา / ส่วนงาน', result.department) +
+      row('เลขบัตรประชาชน', result.citizenIdMasked) +
+      row('วันที่สมัคร', result.date) +
+      row('เวลาสมัคร', result.time);
+  }
 
 
   document
