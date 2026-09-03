@@ -2781,94 +2781,294 @@ document.addEventListener('keydown', function(e) {
 });
 
 async function init(){
-  try {
+
+  const BOOTSTRAP_CACHE_KEY =
+    'mcukk_dhamma_bootstrap_v1';
+
+  const BOOTSTRAP_CACHE_MAX_AGE =
+    30 * 60 * 1000; // 30 นาที
+
+
+  /*
+   * =====================================================
+   * ฟังก์ชันแสดงข้อมูลลงหน้าเว็บ
+   * =====================================================
+   */
+  function applyBootstrap(){
+
+    document
+      .getElementById('logo')
+      .src =
+        BOOTSTRAP.system.logo || '';
+
+    document
+      .getElementById('systemTitle')
+      .textContent =
+        BOOTSTRAP.system.title || '';
+
+    document
+      .getElementById('organization')
+      .textContent =
+        BOOTSTRAP.system.organization || '';
+
+    document
+      .getElementById('maxFileText')
+      .textContent =
+        BOOTSTRAP.system.maxFileMB || '';
+
+    document
+      .getElementById('certificateExample')
+      .src =
+        BOOTSTRAP.system.certificateExample || '';
+
+
+    fillProgramSelect();
+    fillDepartmentSelect();
+    renderCoordinators();
+
+    hideApplicantExtra();
+    hideCertificateArea();
+
+
+    if(
+      STATE.adminToken
+    ){
+
+      showAdminApp();
+
+    }
+
+  }
+
+
+  /*
+   * =====================================================
+   * 1. โหลด Cache ก่อนทันที
+   * =====================================================
+   */
+  let cachedBootstrap =
+    null;
+
+
+  try{
+
+    const raw =
+      localStorage.getItem(
+        BOOTSTRAP_CACHE_KEY
+      );
+
+
+    if(raw){
+
+      const parsed =
+        JSON.parse(
+          raw
+        );
+
+
+      if(
+        parsed &&
+        parsed.data &&
+        parsed.savedAt
+      ){
+
+        const age =
+          Date.now() -
+          Number(
+            parsed.savedAt
+          );
+
+
+        if(
+          age <
+          BOOTSTRAP_CACHE_MAX_AGE
+        ){
+
+          cachedBootstrap =
+            parsed.data;
+
+        }
+
+      }
+
+    }
+
+  }catch(error){
+
+    console.warn(
+      'BOOTSTRAP CACHE READ ERROR:',
+      error
+    );
+
+  }
+
+
+  /*
+   * =====================================================
+   * 2. ถ้ามี Cache → แสดงหน้าเว็บทันที
+   * =====================================================
+   */
+  if(
+    cachedBootstrap
+  ){
+
+    BOOTSTRAP =
+      cachedBootstrap;
+
+    applyBootstrap();
+
+  }
+
+
+  /*
+   * =====================================================
+   * 3. ดึงข้อมูลใหม่จาก Google Sheets แบบเบื้องหลัง
+   * =====================================================
+   */
+  try{
+
+    const controller =
+      new AbortController();
+
+
+    const timeout =
+      setTimeout(
+        () => {
+          controller.abort();
+        },
+        5000
+      );
+
 
     const response =
       await fetch(
-        API_URL + '?api=bootstrap',
+        API_URL +
+        '?api=bootstrap',
         {
           method: 'GET',
-          cache: 'no-store'
+          cache: 'no-store',
+          signal:
+            controller.signal
         }
       );
 
-    if (!response.ok) {
+
+    clearTimeout(
+      timeout
+    );
+
+
+    if(
+      !response.ok
+    ){
+
       throw new Error(
         'เชื่อมต่อ API ไม่สำเร็จ: HTTP ' +
         response.status
       );
+
     }
+
 
     const result =
       await response.json();
 
-    if (
+
+    if(
       !result ||
       !result.success ||
       !result.data
-    ) {
+    ){
+
       throw new Error(
         result && result.error
           ? result.error
           : 'API ไม่ส่งข้อมูลกลับมา'
       );
+
     }
 
+
+    /*
+     * ===================================================
+     * อัปเดตข้อมูลล่าสุด
+     * ===================================================
+     */
     BOOTSTRAP =
       result.data;
 
-  } catch (error) {
+
+    /*
+     * ===================================================
+     * บันทึก Cache
+     * ===================================================
+     */
+    try{
+
+      localStorage.setItem(
+        BOOTSTRAP_CACHE_KEY,
+        JSON.stringify({
+          savedAt:
+            Date.now(),
+
+          data:
+            BOOTSTRAP
+        })
+      );
+
+    }catch(cacheError){
+
+      console.warn(
+        'BOOTSTRAP CACHE WRITE ERROR:',
+        cacheError
+      );
+
+    }
+
+
+    /*
+     * ===================================================
+     * ถ้ายังไม่มี Cache เดิม
+     * ให้แสดง UI หลัง API โหลดเสร็จ
+     *
+     * ถ้ามี Cache แล้ว:
+     * อัปเดต UI ด้วยข้อมูลใหม่
+     * โดยไม่ต้องโหลดหน้าใหม่
+     * ===================================================
+     */
+    applyBootstrap();
+
+
+  }catch(error){
 
     console.error(
       'BOOTSTRAP API ERROR:',
       error
     );
 
+
+    /*
+     * มี Cache ใช้งานอยู่แล้ว
+     * ไม่ต้องทำอะไรต่อ
+     */
+    if(
+      cachedBootstrap
+    ){
+
+      return;
+
+    }
+
+
+    /*
+     * ไม่มี Cache และ API ใช้งานไม่ได้จริง
+     */
     showToast(
       'ไม่สามารถโหลดข้อมูลระบบจาก Google Sheets ได้',
       'error'
     );
 
     return;
-  }
-      
-  document
-    .getElementById('logo')
-    .src =
-      BOOTSTRAP.system.logo || '';
-
-  document
-    .getElementById('systemTitle')
-    .textContent =
-      BOOTSTRAP.system.title;
-
-  document
-    .getElementById('organization')
-    .textContent =
-      BOOTSTRAP.system.organization;
-
-  document
-    .getElementById('maxFileText')
-    .textContent =
-      BOOTSTRAP.system.maxFileMB;
-
-  document
-    .getElementById('certificateExample')
-    .src =
-      BOOTSTRAP.system.certificateExample;
-
-  fillProgramSelect();
-  fillDepartmentSelect();
-  renderCoordinators();
-
-  hideApplicantExtra();
-  hideCertificateArea();
-
-  if (
-    STATE.adminToken
-  ) {
-
-    showAdminApp();
 
   }
 
