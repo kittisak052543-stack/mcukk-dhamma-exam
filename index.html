@@ -3045,7 +3045,7 @@ async function apiPostAndWait(
             requestId:
               requestId
           },
-          20000
+          1800
         );
 
 
@@ -3895,7 +3895,7 @@ async function submitForm(){
     true;
 
   button.innerHTML =
-    'กำลังบันทึกการสมัคร...';
+    'กำลังส่งข้อมูล...';
 
 
   try {
@@ -3917,6 +3917,10 @@ async function submitForm(){
       createRequestId();
 
 
+    button.innerHTML =
+      'กำลังบันทึกข้อมูล...';
+
+
     const registrationResult =
       await apiPostAndWait(
         'submitRegistration',
@@ -3932,10 +3936,10 @@ async function submitForm(){
             10,
 
           initialDelay:
-            500,
+            150,
 
           maxDelay:
-            1000,
+            650,
 
           timeoutMessage:
             'ระบบใช้เวลาบันทึกข้อมูลนานเกินกำหนด กรุณาตรวจสอบเลขบัตรประชาชนก่อนลองใหม่'
@@ -4033,6 +4037,34 @@ function collectFormData(){
  * CLIENT VALIDATION
  * ========================================================= */
 
+function isValidThaiCitizenId(id){
+
+  const value =
+    String(id || '')
+      .replace(/\D/g, '');
+
+  if(!/^\d{13}$/.test(value)){
+    return false;
+  }
+
+  let sum = 0;
+
+  for(let i = 0; i < 12; i++){
+    sum +=
+      Number(value.charAt(i)) *
+      (13 - i);
+  }
+
+  const check =
+    (11 - (sum % 11)) % 10;
+
+  return (
+    check ===
+    Number(value.charAt(12))
+  );
+}
+
+
 function validateClient(p){
 
   if(!p.prefix)
@@ -4060,6 +4092,16 @@ function validateClient(p){
   )
     return fail(
       'กรุณากรอกเลขบัตรประชาชน 13 หลัก',
+      'citizenId'
+    );
+
+  if(
+    !isValidThaiCitizenId(
+      p.citizenId
+    )
+  )
+    return fail(
+      'เลขบัตรประชาชนไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง',
       'citizenId'
     );
 
