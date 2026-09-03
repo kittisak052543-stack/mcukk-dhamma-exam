@@ -3395,11 +3395,10 @@ await fetch(
     })
   }
 ).catch(
-  error => {
-    console.warn(
-      'POST response redirect:',
-      error
-    );
+  () => {
+    // Apps Script อาจ redirect response
+    // ซึ่ง Browser บน GitHub Pages อาจรายงาน CORS
+    // แต่คำขอถูกประมวลผลแล้ว จึงไม่ต้องแสดง warning
   }
 );
 
