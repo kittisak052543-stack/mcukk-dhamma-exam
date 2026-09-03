@@ -3363,16 +3363,53 @@ async function submitForm(){
     }
 
 
-    google.script.run
-      .withSuccessHandler(
-        handleSubmitSuccess
-      )
-      .withFailureHandler(
-        handleSubmitError
-      )
-      .submitRegistration(
-        payload
-      );
+    const response =
+  await fetch(
+    API_URL,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type':
+          'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify({
+        action:
+          'submitRegistration',
+
+        payload:
+          payload
+      })
+    }
+  );
+
+if (!response.ok) {
+
+  throw new Error(
+    'เชื่อมต่อระบบบันทึกข้อมูลไม่สำเร็จ: HTTP ' +
+    response.status
+  );
+
+}
+
+const result =
+  await response.json();
+
+if (
+  !result ||
+  !result.success
+) {
+
+  throw new Error(
+    result && result.error
+      ? result.error
+      : 'ไม่สามารถบันทึกข้อมูลได้'
+  );
+
+}
+
+handleSubmitSuccess(
+  result.data
+);
 
   }catch(error){
 
