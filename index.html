@@ -2720,10 +2720,26 @@ td{
 /* =========================================================
  * BOOTSTRAP
  * ========================================================= */
+const API_URL =
+  'https://script.google.com/macros/s/AKfycbzrYKMpEH7lyqhbyiO_-8lYInXdaGmvmvYGyoOeMekKy0ypRmscDd_LeAijKDoNsfoC/exec';
 
-const BOOTSTRAP =
-  <?!= bootstrap ?>;
-
+let BOOTSTRAP = {
+  system: {
+    title: 'ระบบสมัครสอบธรรมศึกษา',
+    organization: 'มหาวิทยาลัยมหาจุฬาลงกรณราชวิทยาลัย วิทยาเขตขอนแก่น',
+    school: 'สำนักเรียนวัดธาตุ คณะจังหวัดขอนแก่น',
+    year: '2569',
+    open: true,
+    maxFileMB: 10,
+    logo: '',
+    dharmaLogo: '',
+    certificateExample: ''
+  },
+  programs: [],
+  departments: [],
+  coordinators: [],
+  levels: []
+};
 
 /* =========================================================
  * STATE
