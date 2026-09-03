@@ -1,0 +1,4786 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width,
+               initial-scale=1,
+               maximum-scale=1">
+
+<title>ระบบสมัครสอบธรรมศึกษา</title>
+
+<link rel="preconnect"
+      href="https://fonts.googleapis.com">
+
+<link rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet">
+
+<style>
+
+:root{
+  --blue:#1677ff;
+  --blue2:#0c9be8;
+  --blueDark:#0d3b73;
+  --blueSoft:#edf6ff;
+
+  --pink:#ff6f9f;
+  --pinkSoft:#fff1f6;
+
+  --text:#132238;
+  --muted:#66758a;
+  --border:#dce5ef;
+  --white:#ffffff;
+  --bg:#f7faff;
+
+  --success:#149c68;
+  --danger:#e5484d;
+  --warning:#e09b20;
+
+  --shadow:
+    0 24px 70px rgba(23,63,112,.14);
+
+  --radius:22px;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+html,
+body{
+  margin:0;
+  padding:0;
+  min-height:100%;
+}
+
+body{
+  font-family:"Sarabun",
+              system-ui,
+              -apple-system,
+              BlinkMacSystemFont,
+              "Segoe UI",
+              sans-serif;
+
+  color:var(--text);
+
+  background:
+    radial-gradient(
+      circle at 10% 0%,
+      rgba(22,119,255,.08),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 90% 20%,
+      rgba(255,111,159,.06),
+      transparent 30%
+    ),
+    #f7faff;
+}
+
+
+/* =========================================================
+   MAIN CONTAINER
+   ========================================================= */
+
+.app-shell{
+  width:min(100% - 28px, 1050px);
+  margin:28px auto 40px;
+}
+
+.main-card{
+  background:#fff;
+  border:1px solid rgba(213,225,239,.8);
+  border-radius:26px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.hero{
+  position:relative;
+  overflow:hidden;
+
+  padding:
+    28px
+    28px
+    30px;
+
+  color:white;
+
+  background:
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(255,255,255,.17),
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 80% 0%,
+      rgba(255,111,159,.17),
+      transparent 28%
+    ),
+    linear-gradient(
+      135deg,
+      #2167ed 0%,
+      #1489ec 58%,
+      #169fe6 100%
+    );
+
+  text-align:center;
+}
+
+.hero::after{
+  content:"";
+  position:absolute;
+  width:260px;
+  height:260px;
+  right:-110px;
+  top:-120px;
+  border-radius:50%;
+  background:rgba(255,255,255,.08);
+}
+
+.logo{
+  position:relative;
+  z-index:1;
+
+  width:86px;
+  height:86px;
+
+  object-fit:contain;
+
+  border-radius:50%;
+
+  background:white;
+
+  padding:5px;
+
+  box-shadow:
+    0 12px 35px rgba(0,0,0,.16);
+
+  margin-bottom:12px;
+}
+
+.hero h1{
+  position:relative;
+  z-index:1;
+
+  margin:0;
+
+  font-size:
+    clamp(25px,4vw,36px);
+
+  font-weight:700;
+
+  letter-spacing:-.4px;
+}
+
+.hero p{
+  position:relative;
+  z-index:1;
+
+  margin:
+    3px
+    0
+    0;
+
+  opacity:.94;
+
+  font-size:15px;
+}
+
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+.form-body{
+  padding:
+    26px
+    clamp(18px,4vw,38px)
+    32px;
+}
+
+.section{
+  margin-bottom:26px;
+}
+
+.section-title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+
+  margin-bottom:15px;
+  padding-bottom:10px;
+
+  border-bottom:
+    1.5px solid
+    #dceeff;
+}
+
+.section-icon{
+  width:31px;
+  height:31px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  border-radius:10px;
+
+  color:var(--blue);
+
+  background:
+    linear-gradient(
+      135deg,
+      #eaf5ff,
+      #f7fbff
+    );
+}
+
+.section-title h2{
+  margin:0;
+
+  font-size:18px;
+  font-weight:700;
+
+  color:#122a47;
+}
+
+
+/* =========================================================
+   GRID
+   ========================================================= */
+
+.grid{
+  display:grid;
+  grid-template-columns:
+    repeat(12,1fr);
+
+  gap:
+    15px;
+}
+
+.col-12{grid-column:span 12;}
+.col-9{grid-column:span 9;}
+.col-8{grid-column:span 8;}
+.col-6{grid-column:span 6;}
+.col-5{grid-column:span 5;} /* เพิ่มคลาสนี้เพื่อให้ช่องนามสกุลกว้างขึ้น */
+.col-4{grid-column:span 4;}
+.col-3{grid-column:span 3;}
+
+
+.field{
+  min-width:0;
+}
+
+label{
+  display:block;
+
+  margin-bottom:7px;
+
+  font-size:13px;
+
+  font-weight:600;
+
+  color:#34465d;
+}
+
+.required{
+  color:#e5484d;
+}
+
+
+input,
+select{
+  width:100%;
+
+  height:46px;
+
+  border:
+    1px solid
+    #d4dee9;
+
+  border-radius:11px;
+
+  padding:
+    0
+    13px;
+
+  outline:none;
+
+  background:#fff;
+
+  color:#18283b;
+
+  font-family:inherit;
+
+  font-size:14px;
+
+  transition:
+    border-color .18s,
+    box-shadow .18s,
+    background .18s;
+}
+
+input:focus,
+select:focus{
+  border-color:#4a9aff;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(22,119,255,.09);
+
+  background:#fff;
+}
+
+input::placeholder{
+  color:#9ba9b9;
+}
+
+.hint{
+  margin-top:5px;
+
+  font-size:11px;
+
+  color:#8a98a9;
+}
+
+
+/* =========================================================
+   APPLICANT TYPE
+   ========================================================= */
+
+.type-grid{
+  display:grid;
+
+  grid-template-columns:
+    repeat(3,1fr);
+
+  gap:12px;
+
+  margin-top:4px;
+}
+
+.type-card{
+  position:relative;
+
+  cursor:pointer;
+
+  border:
+    1px solid
+    #dbe5ef;
+
+  border-radius:15px;
+
+  padding:16px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #f8fbff
+    );
+
+  transition:
+    .2s ease;
+}
+
+.type-card:hover{
+  transform:
+    translateY(-2px);
+
+  border-color:#9cc9ff;
+
+  box-shadow:
+    0 9px 25px
+    rgba(22,119,255,.08);
+}
+
+.type-card.active{
+  border-color:
+    var(--blue);
+
+  background:
+    linear-gradient(
+      145deg,
+      #edf6ff,
+      #fff
+    );
+
+  box-shadow:
+    0 9px 25px
+    rgba(22,119,255,.11);
+}
+
+.type-radio{
+  position:absolute;
+  top:13px;
+  right:13px;
+
+  width:17px;
+  height:17px;
+
+  border:
+    1.5px solid
+    #cbd7e4;
+
+  border-radius:50%;
+}
+
+.type-card.active
+.type-radio{
+  border-color:
+    var(--blue);
+
+  box-shadow:
+    inset 0 0 0 4px white;
+
+  background:
+    var(--blue);
+}
+
+.type-icon{
+  font-size:22px;
+  margin-bottom:6px;
+}
+
+.type-name{
+  font-size:16px;
+  font-weight:700;
+}
+
+.type-desc{
+  margin-top:2px;
+
+  color:#718094;
+
+  font-size:11px;
+}
+
+
+/* =========================================================
+   LEVEL CARDS
+   ========================================================= */
+
+.level-grid{
+  display:grid;
+
+  grid-template-columns:
+    repeat(3,1fr);
+
+  gap:12px;
+}
+
+.level-card{
+  position:relative;
+
+  cursor:pointer;
+
+  min-height:94px;
+
+  padding:17px;
+
+  border:
+    1px solid
+    #dbe3ed;
+
+  border-radius:15px;
+
+  background:#fff;
+
+  transition:.2s ease;
+}
+
+.level-card:hover{
+  transform:
+    translateY(-2px);
+
+  border-color:
+    #9fc9ff;
+}
+
+.level-card.active{
+  border-color:
+    var(--blue);
+
+  background:
+    linear-gradient(
+      145deg,
+      #eef7ff,
+      #fff
+    );
+
+  box-shadow:
+    0 10px 28px
+    rgba(22,119,255,.1);
+}
+
+.level-mark{
+  position:absolute;
+
+  right:13px;
+  top:13px;
+
+  width:13px;
+  height:13px;
+
+  border-radius:3px;
+
+  background:#eef1f4;
+}
+
+.level-card.active
+.level-mark{
+  background:
+    var(--blue);
+}
+
+.level-title{
+  font-size:16px;
+  font-weight:700;
+
+  margin-bottom:3px;
+}
+
+.level-desc{
+  font-size:11px;
+  color:#718094;
+}
+
+
+/* =========================================================
+   CONDITIONAL AREA
+   ========================================================= */
+
+.conditional{
+  display:none;
+
+  margin-top:17px;
+
+  padding:18px;
+
+  border-radius:17px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #f8fbff,
+      #fff4f8
+    );
+
+  border:
+    1px solid
+    #e1eaf3;
+
+  animation:
+    fadeUp .22s ease;
+}
+
+.conditional.show{
+  display:block;
+}
+
+.conditional-title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+
+  margin-bottom:15px;
+
+  color:#16395f;
+
+  font-size:15px;
+  font-weight:700;
+}
+
+.example{
+  display:flex;
+  flex-direction:column; /* เปลี่ยนเป็นแนวตั้ง */
+  align-items:center;
+  text-align:center;
+  gap:12px;
+  margin-bottom:20px;
+  padding:20px;
+  border:2px dashed #a9c9e9;
+  border-radius:15px;
+  background:#f8fbff;
+}
+
+.example img{
+  width:100%;
+  max-width:380px; /* ขยายภาพให้ใหญ่และชัดเจน */
+  height:auto;
+  border-radius:8px;
+  box-shadow:0 8px 25px rgba(22,119,255,.15);
+}
+
+.example-text{
+  font-size:14px;
+  color:#64748b;
+}
+
+.example-text strong{
+  display:block;
+  color:#20364f;
+  font-size:16px;
+  margin-bottom:5px;
+}
+
+
+/* =========================================================
+   FILE UPLOAD
+   ========================================================= */
+
+.file-zone{
+  position:relative;
+
+  border:
+    1.5px dashed
+    #a9c9e9;
+
+  border-radius:15px;
+
+  padding:18px;
+
+  text-align:center;
+
+  background:
+    linear-gradient(
+      145deg,
+      #f8fcff,
+      #fff
+    );
+
+  cursor:pointer;
+
+  transition:.2s ease;
+}
+
+.file-zone:hover{
+  border-color:
+    var(--blue);
+
+  background:
+    #f4faff;
+}
+
+.file-zone input{
+  position:absolute;
+
+  inset:0;
+
+  width:100%;
+  height:100%;
+
+  opacity:0;
+
+  cursor:pointer;
+}
+
+.file-icon{
+  font-size:28px;
+
+  margin-bottom:3px;
+}
+
+.file-title{
+  font-size:14px;
+  font-weight:700;
+
+  color:#183958;
+}
+
+.file-sub{
+  margin-top:2px;
+
+  font-size:11px;
+
+  color:#7d8b9b;
+}
+
+.file-result{
+  display:none;
+
+  margin-top:10px;
+
+  padding:9px 11px;
+
+  border-radius:10px;
+
+  background:#eefaf5;
+
+  color:#137653;
+
+  font-size:12px;
+
+  text-align:left;
+}
+
+.file-result.show{
+  display:block;
+}
+
+.preview-img {
+  max-width: 100%;
+  max-height: 250px;
+  border-radius: 8px;
+  margin-top: 10px;
+  border: 1px solid #dce5ef;
+  display: block;
+  object-fit: contain;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+/* =========================================================
+   FOOTER / BUTTON
+   ========================================================= */
+
+.action-area{
+  margin-top:10px;
+
+  padding-top:20px;
+
+  border-top:
+    1px solid
+    #edf1f5;
+
+  text-align:center;
+}
+
+.primary-btn{
+  border:0;
+
+  min-width:220px;
+
+  height:50px;
+
+  padding:
+    0
+    25px;
+
+  border-radius:999px;
+
+  cursor:pointer;
+
+  color:#fff;
+
+  font-family:inherit;
+
+  font-size:15px;
+
+  font-weight:700;
+
+  background:
+    linear-gradient(
+      135deg,
+      #317bfa,
+      #098bd8
+    );
+
+  box-shadow:
+    0 11px 25px
+    rgba(22,119,255,.23);
+
+  transition:
+    transform .18s,
+    box-shadow .18s;
+}
+
+.primary-btn:hover{
+  transform:
+    translateY(-2px);
+
+  box-shadow:
+    0 15px 30px
+    rgba(22,119,255,.27);
+}
+
+.primary-btn:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+  transform:none;
+}
+
+
+/* =========================================================
+   COORDINATORS
+   ========================================================= */
+
+.coordinator-box{
+  margin-top:25px;
+
+  padding:17px;
+
+  border-radius:16px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f8fbff,
+      #fff7fa
+    );
+
+  text-align:center;
+}
+
+.coordinator-title{
+  font-weight:700;
+  font-size:13px;
+  color:#253a51;
+}
+
+.coordinator-list{
+  display:flex;
+
+  flex-wrap:wrap;
+
+  justify-content:center;
+
+  gap:8px;
+
+  margin-top:10px;
+}
+
+.coordinator{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+
+  padding:7px 11px;
+
+  border-radius:999px;
+
+  background:#fff;
+
+  border:
+    1px solid
+    #e0e8f0;
+
+  font-size:11px;
+
+  color:#496076;
+}
+
+
+/* =========================================================
+   ADMIN GEAR
+   ========================================================= */
+
+.admin-gear{
+  position:fixed;
+
+  right:18px;
+  bottom:18px;
+
+  width:47px;
+  height:47px;
+
+  border-radius:50%;
+
+  border:
+    1px solid
+    rgba(22,119,255,.18);
+
+  background:
+    rgba(255,255,255,.92);
+
+  backdrop-filter:
+    blur(12px);
+
+  color:
+    #2464b8;
+
+  cursor:pointer;
+
+  box-shadow:
+    0 12px 30px
+    rgba(30,66,105,.16);
+
+  font-size:20px;
+
+  z-index:100;
+
+  transition:.2s;
+}
+
+.admin-gear:hover{
+  transform:
+    rotate(20deg)
+    translateY(-2px);
+
+  box-shadow:
+    0 16px 35px
+    rgba(30,66,105,.22);
+}
+
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.modal{
+  position:fixed;
+
+  inset:0;
+
+  z-index:500;
+
+  display:none;
+
+  align-items:center;
+  justify-content:center;
+
+  padding:18px;
+
+  background:
+    rgba(9,24,43,.48);
+
+  backdrop-filter:
+    blur(8px);
+}
+
+.modal.show{
+  display:flex;
+}
+
+.modal-card{
+  width:
+    min(100%, 470px);
+
+  max-height:
+    calc(100vh - 36px);
+
+  overflow:auto;
+
+  border-radius:22px;
+
+  background:#fff;
+
+  box-shadow:
+    0 30px 90px
+    rgba(0,0,0,.25);
+
+  animation:
+    scaleIn .2s ease;
+}
+
+.modal-header{
+  padding:20px 22px;
+
+  border-bottom:
+    1px solid
+    #edf1f5;
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+}
+
+.modal-header h3{
+  margin:0;
+
+  color:#183451;
+
+  font-size:18px;
+}
+
+.close-btn{
+  border:0;
+
+  width:34px;
+  height:34px;
+
+  border-radius:10px;
+
+  background:#f3f6f9;
+
+  cursor:pointer;
+
+  color:#566779;
+
+  font-size:18px;
+}
+
+.modal-body{
+  padding:22px;
+}
+
+
+/* =========================================================
+   ADMIN
+   ========================================================= */
+
+.admin-page{
+  display:none;
+}
+
+.admin-page.show{
+  display:block;
+}
+
+.admin-top{
+  padding:
+    22px 24px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #176be9,
+      #0796df
+    );
+
+  color:#fff;
+}
+
+.admin-top-row{
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  gap:15px;
+}
+
+.admin-title{
+  margin:0;
+
+  font-size:24px;
+}
+
+.admin-subtitle{
+  margin:2px 0 0;
+
+  opacity:.86;
+
+  font-size:12px;
+}
+
+.admin-logout{
+  border:
+    1px solid
+    rgba(255,255,255,.35);
+
+  color:#fff;
+
+  background:
+    rgba(255,255,255,.12);
+
+  padding:
+    8px 13px;
+
+  border-radius:10px;
+
+  cursor:pointer;
+
+  font-family:inherit;
+}
+
+.admin-body{
+  padding:22px;
+}
+
+.kpi-grid{
+  display:grid;
+
+  grid-template-columns:
+    repeat(5,1fr);
+
+  gap:12px;
+}
+
+.kpi{
+  padding:17px;
+
+  border:
+    1px solid
+    #e2eaf2;
+
+  border-radius:16px;
+
+  background:#fff;
+
+  box-shadow:
+    0 7px 20px
+    rgba(25,65,108,.05);
+}
+
+.kpi-label{
+  font-size:12px;
+  color:#718096;
+}
+
+.kpi-value{
+  margin-top:4px;
+
+  font-size:28px;
+
+  line-height:1;
+
+  font-weight:700;
+
+  color:#163d69;
+}
+
+.dashboard-grid{
+  display:grid;
+
+  grid-template-columns:
+    1.2fr .8fr;
+
+  gap:15px;
+
+  margin-top:15px;
+}
+
+.panel{
+  padding:18px;
+
+  border:
+    1px solid
+    #e2eaf2;
+
+  border-radius:17px;
+
+  background:#fff;
+}
+
+.panel-title{
+  font-size:15px;
+
+  font-weight:700;
+
+  color:#203b58;
+
+  margin-bottom:15px;
+}
+
+.chart-row{
+  display:grid;
+
+  grid-template-columns:
+    90px 1fr 45px;
+
+  align-items:center;
+
+  gap:9px;
+
+  margin-bottom:11px;
+
+  font-size:12px;
+}
+
+.bar{
+  height:9px;
+
+  border-radius:99px;
+
+  overflow:hidden;
+
+  background:#edf2f7;
+}
+
+.bar span{
+  display:block;
+
+  height:100%;
+
+  border-radius:99px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #2777f2,
+      #25a1e6
+    );
+}
+
+.admin-tabs{
+  margin-top:20px;
+
+  display:flex;
+
+  gap:7px;
+
+  border-bottom:
+    1px solid
+    #e4eaf0;
+
+  overflow:auto;
+}
+
+.admin-tab{
+  border:0;
+
+  background:transparent;
+
+  padding:
+    11px 15px;
+
+  white-space:nowrap;
+
+  cursor:pointer;
+
+  font-family:inherit;
+
+  font-weight:600;
+
+  color:#708094;
+
+  border-bottom:
+    2px solid transparent;
+}
+
+.admin-tab.active{
+  color:#126fe7;
+
+  border-bottom-color:
+    #126fe7;
+}
+
+.table-wrap{
+  margin-top:15px;
+
+  overflow:auto;
+
+  border:
+    1px solid
+    #e2e9f0;
+
+  border-radius:14px;
+}
+
+table{
+  width:100%;
+
+  border-collapse:collapse;
+
+  min-width:900px;
+
+  font-size:12px;
+}
+
+th{
+  padding:
+    11px;
+
+  text-align:left;
+
+  background:#f5f8fb;
+
+  color:#4c6075;
+
+  white-space:nowrap;
+}
+
+td{
+  padding:
+    11px;
+
+  border-top:
+    1px solid
+    #edf1f5;
+
+  color:#263d55;
+
+  white-space:nowrap;
+}
+
+.view-btn{
+  border:0;
+
+  border-radius:8px;
+
+  padding:
+    6px 9px;
+
+  background:#edf6ff;
+
+  color:#176edb;
+
+  cursor:pointer;
+
+  font-family:inherit;
+
+  font-size:11px;
+}
+
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
+.search-box{
+  display:flex;
+
+  gap:9px;
+
+  margin-bottom:15px;
+}
+
+.search-box input{
+  flex:1;
+}
+
+.search-btn{
+  border:0;
+
+  min-width:100px;
+
+  border-radius:10px;
+
+  background:#176fe9;
+
+  color:#fff;
+
+  font-family:inherit;
+
+  font-weight:600;
+
+  cursor:pointer;
+}
+
+.detail-grid{
+  display:grid;
+
+  grid-template-columns:
+    repeat(2,1fr);
+
+  gap:10px;
+}
+
+.detail{
+  padding:11px;
+
+  border-radius:11px;
+
+  background:#f7f9fb;
+
+  border:
+    1px solid
+    #e6ebf0;
+}
+
+.detail.full{
+  grid-column:1/-1;
+}
+
+.detail-label{
+  font-size:10px;
+
+  color:#8090a1;
+}
+
+.detail-value{
+  margin-top:2px;
+
+  font-size:13px;
+
+  font-weight:600;
+
+  color:#1d354e;
+
+  word-break:break-word;
+}
+
+.file-link{
+  display:inline-block;
+
+  margin-top:5px;
+
+  color:#1475df;
+
+  text-decoration:none;
+}
+
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+.toast{
+  position:fixed;
+
+  left:50%;
+  bottom:24px;
+
+  transform:
+    translate(-50%, 25px);
+
+  z-index:1000;
+
+  min-width:
+    min(90vw,330px);
+
+  padding:
+    12px 16px;
+
+  border-radius:13px;
+
+  color:#fff;
+
+  background:#182b40;
+
+  box-shadow:
+    0 15px 35px
+    rgba(0,0,0,.18);
+
+  opacity:0;
+
+  pointer-events:none;
+
+  transition:.25s;
+
+  text-align:center;
+
+  font-size:13px;
+}
+
+.toast.show{
+  opacity:1;
+
+  transform:
+    translate(-50%,0);
+}
+
+.toast.success{
+  background:#11815b;
+}
+
+.toast.error{
+  background:#d83f47;
+}
+
+
+/* =========================================================
+   RESULT
+   ========================================================= */
+
+.success-screen{
+  display:none;
+
+  padding:35px 25px;
+
+  text-align:center;
+}
+
+.success-screen.show{
+  display:block;
+}
+
+.success-icon{
+  width:74px;
+  height:74px;
+
+  margin:0 auto 14px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  border-radius:50%;
+
+  background:#e8faf3;
+
+  color:#129365;
+
+  font-size:35px;
+}
+
+.success-screen h2{
+  margin:0;
+
+  font-size:25px;
+
+  color:#163c61;
+}
+
+.application-no{
+  display:inline-block;
+
+  margin:
+    13px 0;
+
+  padding:
+    10px 17px;
+
+  border-radius:11px;
+
+  background:#eef6ff;
+
+  color:#146ed6;
+
+  font-size:19px;
+
+  font-weight:700;
+}
+
+
+/* =========================================================
+   ANIMATION
+   ========================================================= */
+
+@keyframes fadeUp{
+  from{
+    opacity:0;
+    transform:translateY(6px);
+  }
+
+  to{
+    opacity:1;
+    transform:none;
+  }
+}
+
+@keyframes scaleIn{
+  from{
+    opacity:0;
+    transform:scale(.96);
+  }
+
+  to{
+    opacity:1;
+    transform:none;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media(max-width:780px){
+  .col-9, .col-8, .col-6, .col-5, .col-4, .col-3{
+    grid-column:span 12;
+  }
+
+  .app-shell{
+    width:
+      calc(100% - 14px);
+
+    margin:
+      7px auto 25px;
+  }
+
+  .main-card{
+    border-radius:19px;
+  }
+
+  .hero{
+    padding:
+      24px 18px 25px;
+  }
+
+  .logo{
+    width:72px;
+    height:72px;
+  }
+
+  .form-body{
+    padding:
+      20px 14px 25px;
+  }
+
+  .col-9,
+  .col-8,
+  .col-6,
+  .col-4,
+  .col-3{
+    grid-column:span 12;
+  }
+
+  .type-grid,
+  .level-grid{
+    grid-template-columns:1fr;
+  }
+
+  .kpi-grid{
+    grid-template-columns:
+      repeat(2,1fr);
+  }
+
+  .dashboard-grid{
+    grid-template-columns:1fr;
+  }
+
+  .admin-top-row{
+    align-items:flex-start;
+  }
+
+  .admin-title{
+    font-size:20px;
+  }
+
+  .detail-grid{
+    grid-template-columns:1fr;
+  }
+
+  .detail.full{
+    grid-column:auto;
+  }
+
+  .search-box{
+    flex-direction:column;
+  }
+
+  .search-btn{
+    height:44px;
+  }
+}
+
+@media(max-width:430px){
+
+  .kpi-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .kpi{
+    padding:13px;
+  }
+
+  .kpi-value{
+    font-size:23px;
+  }
+
+  .primary-btn{
+    width:100%;
+  }
+
+  .coordinator{
+    width:100%;
+    justify-content:center;
+  }
+}
+
+</style>
+</head>
+
+
+<body>
+
+<div id="publicApp">
+
+  <div class="app-shell">
+
+    <div class="main-card">
+
+      <!-- =================================================
+           HERO
+           ================================================= -->
+
+      <header class="hero">
+
+        <img id="logo"
+             class="logo"
+             alt="โลโก้มหาวิทยาลัย">
+
+        <h1 id="systemTitle">
+          ระบบสมัครสอบธรรมศึกษา
+        </h1>
+
+        <p id="organization">
+          มหาวิทยาลัยมหาจุฬาลงกรณราชวิทยาลัย
+        </p>
+
+      </header>
+
+
+      <!-- =================================================
+           REGISTRATION BODY
+           ================================================= -->
+
+      <main class="form-body"
+            id="registrationBody">
+
+        <!-- =================================================
+             SECTION 1
+             ================================================= -->
+
+        <section class="section">
+
+          <div class="section-title">
+
+            <div class="section-icon">
+              👤
+            </div>
+
+            <h2>
+              ส่วนที่ 1: ข้อมูลผู้สมัคร
+            </h2>
+
+          </div>
+
+
+          <div class="grid">
+
+            <!-- PREFIX -->
+            <div class="field col-3">
+              <label>
+                    คำนำหน้า
+              <span class="required">*</span>
+              </label>
+              <input
+                id="prefix"
+                type="text"
+                placeholder="ระบุคำนำหน้า"
+                autocomplete="honorific-prefix"
+                  >
+              </div>
+
+
+            <!-- FIRST NAME -->
+
+            <div class="field col-4">
+
+              <label>
+                ชื่อ
+                <span class="required">*</span>
+              </label>
+
+              <input
+                id="firstName"
+                type="text"
+                placeholder="ชื่อจริง"
+                autocomplete="given-name"
+              >
+
+            </div>
+
+
+            <!-- LAST NAME -->
+
+            <div class="field col-5">
+
+              <label>
+                นามสกุล
+                <span class="required">*</span>
+              </label>
+
+              <input
+                id="lastName"
+                type="text"
+                placeholder="นามสกุล"
+                autocomplete="family-name"
+              >
+
+            </div>
+
+
+            <!-- CITIZEN ID -->
+
+            <div class="field col-6">
+
+              <label>
+                เลขบัตรประจำตัวประชาชน
+                <span class="required">*</span>
+              </label>
+
+              <input
+                id="citizenId"
+                type="text"
+                inputmode="numeric"
+                maxlength="13"
+                placeholder="เลข 13 หลัก"
+              >
+
+              <div class="hint">
+                กรุณาระบุเลขบัตรประชาชน 13 หลัก
+              </div>
+
+            </div>
+
+
+            <!-- BIRTHDATE -->
+
+            <div class="field col-6">
+
+              <label>
+                วันเดือนปีเกิด
+                <span class="required">*</span>
+              </label>
+
+              <input
+                id="birthDate"
+                type="date"
+              >
+
+            </div>
+
+
+            <!-- PHONE -->
+
+            <div class="field col-6">
+
+              <label>
+                เบอร์โทรศัพท์ติดต่อ
+                <span class="required">*</span>
+              </label>
+
+              <input
+                id="phone"
+                type="tel"
+                inputmode="tel"
+                maxlength="10"
+                placeholder="เช่น 0812345678"
+              >
+
+              <div class="hint">
+                ต้องขึ้นต้นด้วยเลข 0
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- APPLICANT TYPE -->
+
+          <div style="margin-top:19px;">
+
+            <label>
+              สถานะผู้สมัคร
+              <span class="required">*</span>
+            </label>
+
+            <div class="type-grid">
+
+              <div class="type-card"
+                   data-type="อาจารย์"
+                   onclick="selectApplicantType('อาจารย์')">
+
+                <div class="type-radio"></div>
+
+                <div class="type-icon">
+                  👨‍🏫
+                </div>
+
+                <div class="type-name">
+                  อาจารย์
+                </div>
+
+                <div class="type-desc">
+                  อาจารย์ / ผู้สอน
+                </div>
+
+              </div>
+
+
+              <div class="type-card"
+                   data-type="นิสิต"
+                   onclick="selectApplicantType('นิสิต')">
+
+                <div class="type-radio"></div>
+
+                <div class="type-icon">
+                  🎓
+                </div>
+
+                <div class="type-name">
+                  นิสิต
+                </div>
+
+                <div class="type-desc">
+                  นิสิตของมหาวิทยาลัย
+                </div>
+
+              </div>
+
+
+              <div class="type-card"
+                   data-type="เจ้าหน้าที่"
+                   onclick="selectApplicantType('เจ้าหน้าที่')">
+
+                <div class="type-radio"></div>
+
+                <div class="type-icon">
+                  👨‍💼
+                </div>
+
+                <div class="type-name">
+                  เจ้าหน้าที่
+                </div>
+
+                <div class="type-desc">
+                  บุคลากร / เจ้าหน้าที่
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- DYNAMIC APPLICANT DATA -->
+
+          <div id="applicantExtra"
+               class="conditional">
+
+            <div class="conditional-title">
+              ✦ ข้อมูลเพิ่มเติม
+            </div>
+
+            <div class="grid">
+
+              <!-- PROGRAM -->
+
+              <div id="programField"
+                   class="field col-6">
+
+                <label>
+                  หลักสูตร
+                  <span class="required">*</span>
+                </label>
+
+                <select id="program"
+                        onchange="refreshMajor()">
+
+                  <option value="">
+                    เลือกหลักสูตร
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <!-- MAJOR -->
+
+              <div id="majorField"
+                   class="field col-6">
+
+                <label>
+                  สาขาวิชา
+                  <span class="required">*</span>
+                </label>
+
+                <select id="major">
+
+                  <option value="">
+                    เลือกสาขาวิชา
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <!-- YEAR -->
+
+              <div id="yearField"
+                   class="field col-6">
+
+                <label>
+                  ชั้นปี
+                  <span class="required">*</span>
+                </label>
+
+                <select id="yearLevel">
+
+                  <option value="">
+                    เลือกชั้นปี
+                  </option>
+
+                  <option value="1">
+                    ชั้นปีที่ 1
+                  </option>
+
+                  <option value="2">
+                    ชั้นปีที่ 2
+                  </option>
+
+                  <option value="3">
+                    ชั้นปีที่ 3
+                  </option>
+
+                  <option value="4">
+                    ชั้นปีที่ 4
+                  </option>
+
+                  <option value="5">
+                    ชั้นปีที่ 5
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <!-- DEPARTMENT -->
+
+              <div id="departmentField"
+                   class="field col-12">
+
+                <label>
+                  สำนัก/ส่วนงาน
+                  <span class="required">*</span>
+                </label>
+
+                <select id="department">
+
+                  <option value="">
+                    เลือกสำนัก/ส่วนงาน
+                  </option>
+
+                </select>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- =================================================
+             SECTION 2
+             ================================================= -->
+
+        <section class="section">
+
+          <div class="section-title">
+
+            <div class="section-icon">
+              🎓
+            </div>
+
+            <h2>
+              ส่วนที่ 2: ระดับธรรมศึกษาที่สมัครสอบ
+            </h2>
+
+          </div>
+
+
+          <div class="level-grid">
+
+            <!-- TRI -->
+
+            <div class="level-card"
+                 data-level="TRI"
+                 onclick="selectLevel('TRI')">
+
+              <div class="level-mark"></div>
+
+              <div class="level-title">
+                อุดมศึกษาชั้นตรี
+              </div>
+
+              <div class="level-desc">
+                ไม่ต้องแนบหลักฐานการสอบผ่าน
+              </div>
+
+            </div>
+
+
+            <!-- THO -->
+
+            <div class="level-card"
+                 data-level="THO"
+                 onclick="selectLevel('THO')">
+
+              <div class="level-mark"></div>
+
+              <div class="level-title">
+                อุดมศึกษาชั้นโท
+              </div>
+
+              <div class="level-desc">
+                ต้องระบุข้อมูลใบประกาศชั้นตรี
+              </div>
+
+            </div>
+
+
+            <!-- EK -->
+
+            <div class="level-card"
+                 data-level="EK"
+                 onclick="selectLevel('EK')">
+
+              <div class="level-mark"></div>
+
+              <div class="level-title">
+                อุดมศึกษาชั้นเอก
+              </div>
+
+              <div class="level-desc">
+                ต้องระบุข้อมูลใบประกาศชั้นโท
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- CONDITIONAL CERTIFICATE -->
+
+          <div id="certificateArea"
+               class="conditional">
+
+            <div class="conditional-title">
+              📜 ข้อมูลหลักฐานธรรมศึกษา
+            </div>
+
+
+            <!-- EXAMPLE -->
+
+            <div class="example">
+
+              <img id="certificateExample"
+                   alt="ตัวอย่างใบประกาศ"
+                   onerror="this.style.display='none'">
+
+              <div class="example-text">
+
+                <strong>
+                  ตัวอย่างใบรับวุฒิธรรมศึกษา
+                </strong>
+
+                โปรดตรวจสอบข้อมูลจากใบประกาศ
+                ให้ตรงกับเอกสารก่อนยืนยัน
+
+              </div>
+
+            </div>
+
+
+            <div class="grid">
+
+              <!-- PREVIOUS YEAR -->
+
+              <div class="field col-6">
+
+                <label>
+                  พ.ศ. ที่สอบผ่านระดับก่อนหน้า
+                  <span class="required">*</span>
+                </label>
+
+                <input
+                  id="previousYear"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="4"
+                  placeholder="เช่น 2568"
+                >
+
+              </div>
+
+
+              <!-- CERTIFICATE NO -->
+
+              <div class="field col-6">
+
+                <label>
+                  เลขที่ใบประกาศ
+                  <span class="required">*</span>
+                </label>
+
+                <input
+                  id="certificateNo"
+                  type="text"
+                  placeholder="ระบุเลขที่ใบประกาศ"
+                >
+
+              </div>
+
+
+              <!-- SCHOOL -->
+
+              <div class="field col-6">
+
+                <label>
+                  สำนักเรียน
+                  <span class="required">*</span>
+                </label>
+
+                <input
+                  id="school"
+                  type="text"
+                  value="สำนักเรียนวัดธาตุ คณะจังหวัดขอนแก่น"
+                  placeholder="สำนักเรียน"
+                >
+
+              </div>
+
+
+              <!-- PROVINCIAL BOARD -->
+
+              <div class="field col-6">
+
+                <label>
+                  คณะจังหวัด
+                  <span class="required">*</span>
+                </label>
+
+                <input
+                  id="provincialBoard"
+                  type="text"
+                  placeholder="เช่น คณะจังหวัดขอนแก่น"
+                >
+
+              </div>
+
+
+              <!-- FILE -->
+
+              <div class="field col-12">
+
+                <label>
+                  ใบประกาศระดับก่อนหน้า
+                  <span class="required">*</span>
+                </label>
+
+                <div class="file-zone">
+
+                  <input
+                      id="certificateFile"
+                      type="file"
+                      accept="image/*,.pdf"
+                      onchange="handleFile(this)"
+                      >
+
+                  <div class="file-icon">
+                    📷
+                  </div>
+
+                  <div class="file-title">
+                    แตะเพื่อถ่ายภาพหรือเลือกไฟล์
+                  </div>
+
+                  <div class="file-sub">
+                    JPG / PNG / WEBP / PDF
+                    • สูงสุด
+                    <span id="maxFileText">
+                      10
+                    </span>
+                    MB
+                  </div>
+
+                </div>
+
+                <div id="fileResult"
+                     class="file-result">
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- =================================================
+             ACTION
+             ================================================= -->
+
+        <div class="action-area">
+
+          <button
+            id="submitButton"
+            class="primary-btn"
+            onclick="submitForm()">
+
+            ⚠ ยืนยันการสมัครสอบ
+
+          </button>
+
+        </div>
+
+
+        <!-- =================================================
+             COORDINATORS
+             ================================================= -->
+
+        <div class="coordinator-box">
+
+          <div class="coordinator-title">
+            สอบถามข้อมูลเพิ่มเติม / ผู้ประสานงาน
+          </div>
+
+          <div id="coordinatorList"
+               class="coordinator-list">
+          </div>
+
+        </div>
+
+      </main>
+
+
+      <!-- =================================================
+           SUCCESS
+           ================================================= -->
+
+      <div id="successScreen"
+           class="success-screen">
+
+        <div class="success-icon">
+          ✓
+        </div>
+
+        <h2>
+          สมัครสอบสำเร็จ
+        </h2>
+
+        <div class="application-no"
+             id="applicationNo">
+        </div>
+
+        <p>
+          ระบบบันทึกข้อมูลการสมัครเรียบร้อยแล้ว
+        </p>
+
+        <p style="font-size:12px;color:#718096;">
+          กรุณาบันทึกเลขที่สมัครไว้สำหรับใช้ตรวจสอบข้อมูล
+        </p>
+
+        <button
+        class="primary-btn"
+        onclick="resetForm()"> <!-- เปลี่ยนจาก location.reload() เป็น resetForm() -->
+        สมัครรายการใหม่
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =======================================================
+     ADMIN GEAR
+     ======================================================= -->
+
+<button
+  class="admin-gear"
+  title="เข้าสู่ระบบผู้ดูแล"
+  onclick="openAdminLogin()">
+
+  ⚙
+
+</button>
+
+
+<!-- =======================================================
+     ADMIN LOGIN MODAL
+     ======================================================= -->
+
+<div id="adminLoginModal"
+     class="modal">
+
+  <div class="modal-card">
+
+    <div class="modal-header">
+
+      <h3>
+        เข้าสู่ระบบผู้ดูแล
+      </h3>
+
+      <button
+        class="close-btn"
+        onclick="closeModal('adminLoginModal')">
+
+        ×
+
+      </button>
+
+    </div>
+
+    <div class="modal-body">
+
+      <div class="field">
+
+        <label>
+          ชื่อผู้ใช้
+        </label>
+
+        <input
+          id="adminUsername"
+          type="text"
+          autocomplete="username"
+          placeholder="ชื่อผู้ใช้">
+
+      </div>
+
+      <div class="field"
+           style="margin-top:12px;">
+
+        <label>
+          รหัสผ่าน
+        </label>
+
+        <input
+          id="adminPassword"
+          type="password"
+          autocomplete="current-password"
+          placeholder="รหัสผ่าน"
+          onkeydown="
+            if(event.key==='Enter')
+              adminLogin();
+          ">
+
+      </div>
+
+      <button
+        id="adminLoginButton"
+        class="primary-btn"
+        style="width:100%;margin-top:18px;"
+        onclick="adminLogin()">
+
+        เข้าสู่ระบบ
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =======================================================
+     ADMIN APP
+     ======================================================= -->
+
+<div id="adminApp"
+     style="display:none;">
+
+  <div class="app-shell">
+
+    <div class="main-card">
+
+      <div class="admin-top">
+
+        <div class="admin-top-row">
+
+          <div>
+
+            <h1 class="admin-title">
+              Admin Dashboard
+            </h1>
+
+            <p class="admin-subtitle">
+              ระบบบริหารจัดการการสมัครสอบธรรมศึกษา
+            </p>
+
+          </div>
+
+          <button
+            class="admin-logout"
+            onclick="adminLogout()">
+
+            ออกจากระบบ
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="admin-body">
+
+        <!-- KPI -->
+
+        <div class="kpi-grid">
+
+          <div class="kpi">
+            <div class="kpi-label">
+              ผู้สมัครทั้งหมด
+            </div>
+            <div class="kpi-value"
+                 id="kpiTotal">
+              0
+            </div>
+          </div>
+
+          <div class="kpi">
+            <div class="kpi-label">
+              อุดมศึกษาชั้นตรี
+            </div>
+            <div class="kpi-value"
+                 id="kpiTri">
+              0
+            </div>
+          </div>
+
+          <div class="kpi">
+            <div class="kpi-label">
+              อุดมศึกษาชั้นโท
+            </div>
+            <div class="kpi-value"
+                 id="kpiTho">
+              0
+            </div>
+          </div>
+
+          <div class="kpi">
+            <div class="kpi-label">
+              อุดมศึกษาชั้นเอก
+            </div>
+            <div class="kpi-value"
+                 id="kpiEk">
+              0
+            </div>
+          </div>
+
+          <div class="kpi">
+            <div class="kpi-label">
+              สมัครวันนี้
+            </div>
+            <div class="kpi-value"
+                 id="kpiToday">
+              0
+            </div>
+          </div>
+
+        </div>
+
+
+        <!-- CHARTS -->
+
+        <div class="dashboard-grid">
+
+          <div class="panel">
+
+            <div class="panel-title">
+              จำนวนผู้สมัครแยกตามระดับ
+            </div>
+
+            <div id="levelChart">
+            </div>
+
+          </div>
+
+
+          <div class="panel">
+
+            <div class="panel-title">
+              ประเภทผู้สมัคร
+            </div>
+
+            <div id="typeChart">
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- SEARCH -->
+
+        <div class="panel"
+             style="margin-top:15px;">
+
+          <div class="panel-title">
+            ตรวจสอบข้อมูลผู้สมัคร
+          </div>
+
+          <div class="search-box">
+
+            <input
+              id="adminCitizenSearch"
+              type="text"
+              maxlength="13"
+              inputmode="numeric"
+              placeholder="กรอกเลขบัตรประชาชน 13 หลัก">
+
+            <button
+              class="search-btn"
+              onclick="searchCitizen()">
+
+              ตรวจสอบ
+
+            </button>
+
+          </div>
+
+          <div id="searchResult">
+          </div>
+
+        </div>
+
+
+        <!-- TABS -->
+
+        <div class="admin-tabs">
+
+          <button
+            class="admin-tab active"
+            data-admin-level="TRI"
+            onclick="switchAdminTab('TRI',this)">
+
+            อุดมศึกษาชั้นตรี
+
+          </button>
+
+          <button
+            class="admin-tab"
+            data-admin-level="THO"
+            onclick="switchAdminTab('THO',this)">
+
+            อุดมศึกษาชั้นโท
+
+          </button>
+
+          <button
+            class="admin-tab"
+            data-admin-level="EK"
+            onclick="switchAdminTab('EK',this)">
+
+            อุดมศึกษาชั้นเอก
+
+          </button>
+
+        </div>
+
+
+        <div id="adminTableArea"
+             class="table-wrap">
+
+          <div style="padding:25px;text-align:center;">
+            ยังไม่มีข้อมูล
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =======================================================
+     DETAIL MODAL
+     ======================================================= -->
+
+<div id="detailModal"
+     class="modal">
+
+  <div class="modal-card"
+       style="width:min(100%,850px);">
+
+    <div class="modal-header">
+
+      <h3>
+        รายละเอียดข้อมูลผู้สมัคร
+      </h3>
+
+      <button
+        class="close-btn"
+        onclick="closeModal('detailModal')">
+
+        ×
+
+      </button>
+
+    </div>
+
+    <div class="modal-body"
+         id="detailBody">
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =======================================================
+     TOAST
+     ======================================================= -->
+
+<div id="toast"
+     class="toast">
+</div>
+
+
+<script>
+
+/* =========================================================
+ * BOOTSTRAP
+ * ========================================================= */
+
+const BOOTSTRAP =
+  <?!= bootstrap ?>;
+
+
+/* =========================================================
+ * STATE
+ * ========================================================= */
+
+const STATE = {
+  applicantType: '',
+  level: '',
+  file: null,
+  adminToken:
+    sessionStorage.getItem(
+      'dhamma_admin_token'
+    ) || '',
+  adminLevel: 'TRI'
+};
+
+
+/* =========================================================
+ * INIT
+ * ========================================================= */
+
+document.addEventListener(
+  'DOMContentLoaded',
+  init
+);
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    const tag = e.target.tagName.toLowerCase();
+    if (tag === 'input' || tag === 'select') {
+      if (document.getElementById('adminLoginModal').classList.contains('show')) {
+        adminLogin();
+      } else if (document.getElementById('registrationBody').style.display !== 'none') {
+        e.preventDefault();
+        submitForm();
+      }
+    }
+  }
+});
+
+function init(){
+
+  document
+    .getElementById('logo')
+    .src =
+      BOOTSTRAP.system.logo || '';
+
+  document
+    .getElementById('systemTitle')
+    .textContent =
+      BOOTSTRAP.system.title;
+
+  document
+    .getElementById('organization')
+    .textContent =
+      BOOTSTRAP.system.organization;
+
+  document
+    .getElementById('maxFileText')
+    .textContent =
+      BOOTSTRAP.system.maxFileMB;
+
+  document
+    .getElementById('certificateExample')
+    .src =
+      BOOTSTRAP.system.certificateExample;
+
+  fillProgramSelect();
+  fillDepartmentSelect();
+  renderCoordinators();
+
+  hideApplicantExtra();
+  hideCertificateArea();
+
+  if (
+    STATE.adminToken
+  ) {
+
+    showAdminApp();
+
+  }
+
+}
+
+
+/* =========================================================
+ * PROGRAM
+ * ========================================================= */
+
+function fillProgramSelect(){
+
+  const select =
+    document.getElementById(
+      'program'
+    );
+
+  const unique =
+    [
+      ...new Set(
+        BOOTSTRAP.programs
+          .map(
+            x =>
+              x['หลักสูตร']
+          )
+      )
+    ];
+
+  unique.forEach(
+    value => {
+
+      const option =
+        document.createElement(
+          'option'
+        );
+
+      option.value =
+        value;
+
+      option.textContent =
+        value;
+
+      select.appendChild(
+        option
+      );
+    }
+  );
+}
+
+
+function refreshMajor(){
+
+  const program =
+    document.getElementById(
+      'program'
+    ).value;
+
+  const select =
+    document.getElementById(
+      'major'
+    );
+
+  select.innerHTML =
+    '<option value="">เลือกสาขาวิชา</option>';
+
+  BOOTSTRAP.programs
+    .filter(
+      x =>
+        x['หลักสูตร'] ===
+        program
+    )
+    .forEach(
+      x => {
+
+        const option =
+          document.createElement(
+            'option'
+          );
+
+        option.value =
+          x['สาขาวิชา'];
+
+        option.textContent =
+          x['สาขาวิชา'];
+
+        select.appendChild(
+          option
+        );
+
+      }
+    );
+}
+
+
+/* =========================================================
+ * DEPARTMENT
+ * ========================================================= */
+
+function fillDepartmentSelect(){
+
+  const select =
+    document.getElementById(
+      'department'
+    );
+
+  BOOTSTRAP.departments
+    .forEach(
+      value => {
+
+        const option =
+          document.createElement(
+            'option'
+          );
+
+        option.value =
+          value;
+
+        option.textContent =
+          value;
+
+        select.appendChild(
+          option
+        );
+      }
+    );
+}
+
+
+/* =========================================================
+ * APPLICANT TYPE
+ * ========================================================= */
+
+function selectApplicantType(type){
+
+  STATE.applicantType =
+    type;
+
+  document
+    .querySelectorAll(
+      '.type-card'
+    )
+    .forEach(
+      card => {
+
+        card.classList.toggle(
+          'active',
+          card.dataset.type ===
+          type
+        );
+
+      }
+    );
+
+  const extra =
+    document.getElementById(
+      'applicantExtra'
+    );
+
+  const programField =
+    document.getElementById(
+      'programField'
+    );
+
+  const majorField =
+    document.getElementById(
+      'majorField'
+    );
+
+  const yearField =
+    document.getElementById(
+      'yearField'
+    );
+
+  const departmentField =
+    document.getElementById(
+      'departmentField'
+    );
+
+
+  extra.classList.add('show');
+
+
+  if(type === 'อาจารย์'){
+
+    programField.style.display='';
+    majorField.style.display='';
+    yearField.style.display='none';
+    departmentField.style.display='none';
+
+  }
+
+
+  if(type === 'นิสิต'){
+
+    programField.style.display='';
+    majorField.style.display='';
+    yearField.style.display='';
+    departmentField.style.display='none';
+
+  }
+
+
+  if(type === 'เจ้าหน้าที่'){
+
+    programField.style.display='none';
+    majorField.style.display='none';
+    yearField.style.display='none';
+    departmentField.style.display='';
+
+  }
+
+}
+
+
+function hideApplicantExtra(){
+
+  document
+    .getElementById(
+      'applicantExtra'
+    )
+    .classList.remove('show');
+
+}
+
+
+/* =========================================================
+ * LEVEL
+ * ========================================================= */
+
+function selectLevel(level){
+
+  STATE.level =
+    level;
+
+  document
+    .querySelectorAll(
+      '.level-card'
+    )
+    .forEach(
+      card => {
+
+        card.classList.toggle(
+          'active',
+          card.dataset.level ===
+          level
+        );
+
+      }
+    );
+
+
+  const area =
+    document.getElementById(
+      'certificateArea'
+    );
+
+
+  if(
+    level === 'THO' ||
+    level === 'EK'
+  ){
+
+    area.classList.add(
+      'show'
+    );
+
+    document
+      .getElementById(
+        'certificateExample'
+      )
+      .style.display =
+        'block';
+
+  }else{
+
+    hideCertificateArea();
+
+  }
+
+}
+
+
+function hideCertificateArea(){
+
+  document
+    .getElementById(
+      'certificateArea'
+    )
+    .classList.remove(
+      'show'
+    );
+
+}
+
+
+/* =========================================================
+ * FILE
+ * ========================================================= */
+
+function handleFile(input) {
+  const file = input.files && input.files[0];
+  if (!file) {
+    return;
+  }
+
+  // ตรวจสอบขนาดไฟล์ (MB)
+  const maxMB = Number(BOOTSTRAP.system.maxFileMB) || 10;
+  if (file.size > maxMB * 1024 * 1024) {
+    input.value = '';
+    showToast('ไฟล์มีขนาดเกิน ' + maxMB + ' MB', 'error');
+    return;
+  }
+
+  // ตรวจสอบนามสกุลไฟล์ที่อนุญาต
+  const allowed = [
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'application/pdf'
+  ];
+  if (allowed.indexOf(file.type) === -1) {
+    input.value = '';
+    showToast('รองรับเฉพาะ JPG, PNG, WEBP และ PDF', 'error');
+    return;
+  }
+
+  // บันทึกไฟล์ลง State
+  STATE.file = file;
+
+  const result = document.getElementById('fileResult');
+  result.classList.add('show');
+  result.innerHTML = '<div style="text-align:center; padding:10px;">กำลังโหลดตัวอย่างภาพ...</div>';
+
+  // ตรวจสอบว่าเป็นรูปภาพหรือไม่ เพื่อทำการ Preview
+  if (file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      result.innerHTML = `
+        <div>
+          <img src="${e.target.result}" class="preview-img" alt="Preview">
+        </div>
+        <div style="margin-top:12px; text-align:center; color:#137653;">
+          ✓ รูปภาพพร้อมแนบ: <strong>${escapeHtml(file.name)}</strong> (${formatBytes(file.size)})
+        </div>
+      `;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    // กรณีเป็นไฟล์ PDF จะไม่โชว์รูป แต่โชว์ชื่อไฟล์
+    result.innerHTML = `
+      <div style="text-align:center; padding:10px; color:#137653;">
+        📄 ✓ ไฟล์ PDF พร้อมแนบ: <strong>${escapeHtml(file.name)}</strong> (${formatBytes(file.size)})
+      </div>
+    `;
+  }
+}
+
+
+function formatBytes(bytes){
+
+  if(bytes < 1024)
+    return bytes + ' B';
+
+  if(bytes < 1024*1024)
+    return (
+      bytes/1024
+    ).toFixed(1) +
+    ' KB';
+
+  return (
+    bytes/1024/1024
+  ).toFixed(2) +
+  ' MB';
+
+}
+
+
+/* =========================================================
+ * COORDINATORS
+ * ========================================================= */
+
+function renderCoordinators(){
+
+  const box =
+    document.getElementById(
+      'coordinatorList'
+    );
+
+  box.innerHTML='';
+
+  BOOTSTRAP.coordinators
+    .forEach(
+      person => {
+
+        const item =
+          document.createElement(
+            'div'
+          );
+
+        item.className =
+          'coordinator';
+
+        item.innerHTML =
+          '☎ ' +
+          escapeHtml(
+            person['ชื่อผู้ประสานงาน']
+          ) +
+          ' : ' +
+          escapeHtml(
+            person['โทรศัพท์']
+          );
+
+        box.appendChild(
+          item
+        );
+
+      }
+    );
+
+}
+
+
+/* =========================================================
+ * SUBMIT
+ * ========================================================= */
+
+async function submitForm(){
+
+  if(
+    !BOOTSTRAP.system.open
+  ){
+
+    showToast(
+      'ขณะนี้ปิดรับสมัคร',
+      'error'
+    );
+
+    return;
+  }
+
+
+  const payload =
+    collectFormData();
+
+
+  const clientValidation =
+    validateClient(
+      payload
+    );
+
+  if(
+    !clientValidation.ok
+  ){
+
+    showToast(
+      clientValidation.message,
+      'error'
+    );
+
+    focusFirstError(
+      clientValidation.field
+    );
+
+    return;
+  }
+
+
+  const button =
+    document.getElementById(
+      'submitButton'
+    );
+
+  button.disabled =
+    true;
+
+  button.innerHTML =
+    'กำลังบันทึกการสมัคร...';
+
+
+  try{
+
+    if(
+      payload.level === 'THO' ||
+      payload.level === 'EK'
+    ){
+
+      payload.file =
+        await fileToBase64(
+          STATE.file
+        );
+
+    }
+
+
+    google.script.run
+      .withSuccessHandler(
+        handleSubmitSuccess
+      )
+      .withFailureHandler(
+        handleSubmitError
+      )
+      .submitRegistration(
+        payload
+      );
+
+  }catch(error){
+
+    handleSubmitError(
+      error
+    );
+
+  }
+
+}
+
+
+function collectFormData(){
+
+  return {
+
+    prefix:
+      value('prefix'),
+
+    firstName:
+      value('firstName'),
+
+    lastName:
+      value('lastName'),
+
+    citizenId:
+      value('citizenId')
+        .replace(/\D/g,''),
+
+    birthDate:
+      value('birthDate'),
+
+    phone:
+      value('phone')
+        .replace(/\D/g,''),
+
+    applicantType:
+      STATE.applicantType,
+
+    program:
+      value('program'),
+
+    major:
+      value('major'),
+
+    yearLevel:
+      value('yearLevel'),
+
+    department:
+      value('department'),
+
+    level:
+      STATE.level,
+
+    previousYear:
+      value('previousYear'),
+
+    certificateNo:
+      value('certificateNo'),
+
+    school:
+      value('school'),
+
+    provincialBoard:
+      value('provincialBoard')
+
+  };
+
+}
+
+
+/* =========================================================
+ * CLIENT VALIDATION
+ * ========================================================= */
+
+function validateClient(p){
+
+  if(!p.prefix)
+    return fail(
+      'กรุณาเลือกคำนำหน้า',
+      'prefix'
+    );
+
+  if(!p.firstName)
+    return fail(
+      'กรุณากรอกชื่อ',
+      'firstName'
+    );
+
+  if(!p.lastName)
+    return fail(
+      'กรุณากรอกนามสกุล',
+      'lastName'
+    );
+
+  if(
+    !/^\d{13}$/.test(
+      p.citizenId
+    )
+  )
+    return fail(
+      'กรุณากรอกเลขบัตรประชาชน 13 หลัก',
+      'citizenId'
+    );
+
+  if(!p.birthDate)
+    return fail(
+      'กรุณาระบุวันเดือนปีเกิด',
+      'birthDate'
+    );
+
+  if(
+    !/^0\d{8,9}$/.test(
+      p.phone
+    )
+  )
+    return fail(
+      'กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง',
+      'phone'
+    );
+
+  if(!p.applicantType)
+    return fail(
+      'กรุณาเลือกประเภทผู้สมัคร'
+    );
+
+  if(
+    p.applicantType === 'อาจารย์' ||
+    p.applicantType === 'นิสิต'
+  ){
+
+    if(!p.program)
+      return fail(
+        'กรุณาเลือกหลักสูตร',
+        'program'
+      );
+
+    if(!p.major)
+      return fail(
+        'กรุณาเลือกสาขาวิชา',
+        'major'
+      );
+
+  }
+
+  if(
+    p.applicantType === 'นิสิต' &&
+    !p.yearLevel
+  ){
+
+    return fail(
+      'กรุณาเลือกชั้นปี',
+      'yearLevel'
+    );
+
+  }
+
+  if(
+    p.applicantType === 'เจ้าหน้าที่' &&
+    !p.department
+  ){
+
+    return fail(
+      'กรุณาเลือกส่วนงาน',
+      'department'
+    );
+
+  }
+
+  if(!p.level)
+    return fail(
+      'กรุณาเลือกระดับที่สมัคร'
+    );
+
+
+  if(
+    p.level === 'THO' ||
+    p.level === 'EK'
+  ){
+
+    if(
+      !/^\d{4}$/.test(
+        p.previousYear
+      )
+    )
+      return fail(
+        'กรุณาระบุ พ.ศ. ให้ถูกต้อง',
+        'previousYear'
+      );
+
+    if(!p.certificateNo)
+      return fail(
+        'กรุณาระบุเลขที่ใบประกาศ',
+        'certificateNo'
+      );
+
+    if(!p.school)
+      return fail(
+        'กรุณาระบุสำนักเรียน',
+        'school'
+      );
+
+    if(!p.provincialBoard)
+      return fail(
+        'กรุณาระบุคณะจังหวัด',
+        'provincialBoard'
+      );
+
+    if(!STATE.file)
+      return fail(
+        'กรุณาแนบใบประกาศ',
+        'certificateFile'
+      );
+
+  }
+
+  return {
+    ok:true
+  };
+
+}
+
+
+function fail(message,field){
+
+  return {
+    ok:false,
+    message:message,
+    field:field
+  };
+
+}
+
+
+function focusFirstError(field){
+
+  if(!field)
+    return;
+
+  const el =
+    document.getElementById(
+      field
+    );
+
+  if(el){
+
+    el.focus();
+
+    el.scrollIntoView({
+      behavior:'smooth',
+      block:'center'
+    });
+
+  }
+
+}
+
+
+/* =========================================================
+ * FILE TO BASE64
+ * ========================================================= */
+
+function fileToBase64(file){
+
+  return new Promise(
+    (resolve,reject) => {
+
+      if(!file){
+        reject(
+          new Error(
+            'ไม่พบไฟล์'
+          )
+        );
+
+        return;
+      }
+
+      const reader =
+        new FileReader();
+
+      reader.onload =
+        () => {
+
+          const result =
+            String(
+              reader.result
+            );
+
+          const comma =
+            result.indexOf(',');
+
+          resolve({
+
+            name:
+              file.name,
+
+            mimeType:
+              file.type,
+
+            size:
+              file.size,
+
+            base64:
+              comma >= 0
+                ? result.slice(
+                    comma + 1
+                  )
+                : result
+
+          });
+
+        };
+
+      reader.onerror =
+        reject;
+
+      reader.readAsDataURL(
+        file
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+ * SUBMIT RESPONSE
+ * ========================================================= */
+
+function handleSubmitSuccess(result){
+
+  const button =
+    document.getElementById(
+      'submitButton'
+    );
+
+  button.disabled =
+    false;
+
+  button.innerHTML =
+    '⚠ ยืนยันการสมัครสอบ';
+
+
+  document
+    .getElementById(
+      'registrationBody'
+    )
+    .style.display =
+      'none';
+
+
+  document
+    .getElementById(
+      'applicationNo'
+    )
+    .textContent =
+      'เลขที่สมัคร: ' +
+      result.applicationNo;
+
+
+  document
+    .getElementById(
+      'successScreen'
+    )
+    .classList.add(
+      'show'
+    );
+
+
+  window.scrollTo({
+    top:0,
+    behavior:'smooth'
+  });
+
+}
+
+
+function handleSubmitError(error){
+
+  const button =
+    document.getElementById(
+      'submitButton'
+    );
+
+  button.disabled =
+    false;
+
+  button.innerHTML =
+    '⚠ ยืนยันการสมัครสอบ';
+
+
+  const message =
+    error &&
+    error.message
+      ? error.message
+      : 'ไม่สามารถบันทึกข้อมูลได้';
+
+
+  showToast(
+    message,
+    'error'
+  );
+
+}
+
+
+/* =========================================================
+ * ADMIN LOGIN
+ * ========================================================= */
+
+function openAdminLogin(){
+
+  if(
+    STATE.adminToken
+  ){
+
+    showAdminApp();
+
+    return;
+  }
+
+  document
+    .getElementById(
+      'adminLoginModal'
+    )
+    .classList.add(
+      'show'
+    );
+
+}
+
+
+function adminLogin(){
+
+  const username =
+    value('adminUsername');
+
+  const password =
+    value('adminPassword');
+
+  if(!username || !password){
+
+    showToast(
+      'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน',
+      'error'
+    );
+
+    return;
+  }
+
+
+  const button =
+    document.getElementById(
+      'adminLoginButton'
+    );
+
+  button.disabled =
+    true;
+
+  button.textContent =
+    'กำลังเข้าสู่ระบบ...';
+
+
+  google.script.run
+    .withSuccessHandler(
+      result => {
+
+        button.disabled =
+          false;
+
+        button.textContent =
+          'เข้าสู่ระบบ';
+
+
+        if(
+          !result ||
+          !result.success
+        ){
+
+          showToast(
+            result &&
+            result.message
+              ? result.message
+              : 'เข้าสู่ระบบไม่สำเร็จ',
+            'error'
+          );
+
+          return;
+        }
+
+
+        STATE.adminToken =
+          result.token;
+
+        sessionStorage.setItem(
+          'dhamma_admin_token',
+          result.token
+        );
+
+        closeModal(
+          'adminLoginModal'
+        );
+
+        showAdminApp();
+
+      }
+    )
+    .withFailureHandler(
+      error => {
+
+        button.disabled =
+          false;
+
+        button.textContent =
+          'เข้าสู่ระบบ';
+
+        showToast(
+          error.message ||
+          'เข้าสู่ระบบไม่สำเร็จ',
+          'error'
+        );
+
+      }
+    )
+    .adminLogin(
+      username,
+      password
+    );
+
+}
+
+
+/* =========================================================
+ * SHOW ADMIN
+ * ========================================================= */
+
+function showAdminApp(){
+
+  document
+    .getElementById(
+      'publicApp'
+    )
+    .style.display =
+      'none';
+
+  document
+    .getElementById(
+      'adminApp'
+    )
+    .style.display =
+      'block';
+
+  document
+    .querySelector(
+      '.admin-gear'
+    )
+    .style.display =
+      'none';
+
+
+  loadDashboard();
+
+  loadAdminApplications(
+    'TRI'
+  );
+
+}
+
+
+/* =========================================================
+ * ADMIN LOGOUT
+ * ========================================================= */
+
+function adminLogout(){
+  const token = STATE.adminToken;
+  STATE.adminToken = '';
+  sessionStorage.removeItem('dhamma_admin_token');
+
+  google.script.run
+    .withSuccessHandler(() => {
+      // สลับหน้าจอกลับมาหน้าฟอร์มผู้ใช้
+      document.getElementById('adminApp').style.display = 'none';
+      document.getElementById('publicApp').style.display = 'block';
+      document.querySelector('.admin-gear').style.display = '';
+      resetForm();
+    })
+    .withFailureHandler(() => {
+      document.getElementById('adminApp').style.display = 'none';
+      document.getElementById('publicApp').style.display = 'block';
+      document.querySelector('.admin-gear').style.display = '';
+    })
+    .adminLogout(token);
+}
+
+
+/* =========================================================
+ * DASHBOARD
+ * ========================================================= */
+
+function loadDashboard(){
+
+  google.script.run
+    .withSuccessHandler(
+      renderDashboard
+    )
+    .withFailureHandler(
+      handleAdminError
+    )
+    .getAdminDashboard(
+      STATE.adminToken
+    );
+
+}
+
+
+function renderDashboard(data){
+
+  document
+    .getElementById(
+      'kpiTotal'
+    )
+    .textContent =
+      formatNumber(
+        data.total
+      );
+
+  document
+    .getElementById(
+      'kpiTri'
+    )
+    .textContent =
+      formatNumber(
+        data.tri
+      );
+
+  document
+    .getElementById(
+      'kpiTho'
+    )
+    .textContent =
+      formatNumber(
+        data.tho
+      );
+
+  document
+    .getElementById(
+      'kpiEk'
+    )
+    .textContent =
+      formatNumber(
+        data.ek
+      );
+
+  document
+    .getElementById(
+      'kpiToday'
+    )
+    .textContent =
+      formatNumber(
+        data.today
+      );
+
+
+  renderLevelChart(
+    data
+  );
+
+  renderTypeChart(
+    data
+  );
+
+}
+
+
+function renderLevelChart(data){
+
+  const rows = [
+    {
+      name:'ชั้นตรี',
+      value:data.tri
+    },
+    {
+      name:'ชั้นโท',
+      value:data.tho
+    },
+    {
+      name:'ชั้นเอก',
+      value:data.ek
+    }
+  ];
+
+  const max =
+    Math.max(
+      1,
+      ...rows.map(
+        x => x.value
+      )
+    );
+
+  document
+    .getElementById(
+      'levelChart'
+    )
+    .innerHTML =
+      rows
+        .map(
+          row => {
+
+            const width =
+              Math.max(
+                row.value
+                  ? 4
+                  : 0,
+                row.value /
+                max *
+                100
+              );
+
+            return `
+              <div class="chart-row">
+                <div>${escapeHtml(row.name)}</div>
+                <div class="bar">
+                  <span style="width:${width}%"></span>
+                </div>
+                <strong>${formatNumber(row.value)}</strong>
+              </div>
+            `;
+
+          }
+        )
+        .join('');
+
+}
+
+
+function renderTypeChart(data){
+
+  const rows = [
+    {
+      name:'อาจารย์',
+      value:data.applicantTypes.teacher
+    },
+    {
+      name:'นิสิต',
+      value:data.applicantTypes.student
+    },
+    {
+      name:'เจ้าหน้าที่',
+      value:data.applicantTypes.staff
+    }
+  ];
+
+  const max =
+    Math.max(
+      1,
+      ...rows.map(
+        x => x.value
+      )
+    );
+
+  document
+    .getElementById(
+      'typeChart'
+    )
+    .innerHTML =
+      rows
+        .map(
+          row => {
+
+            const width =
+              Math.max(
+                row.value
+                  ? 4
+                  : 0,
+                row.value /
+                max *
+                100
+              );
+
+            return `
+              <div class="chart-row">
+                <div>${escapeHtml(row.name)}</div>
+                <div class="bar">
+                  <span style="width:${width}%"></span>
+                </div>
+                <strong>${formatNumber(row.value)}</strong>
+              </div>
+            `;
+
+          }
+        )
+        .join('');
+
+}
+
+
+/* =========================================================
+ * ADMIN TABS
+ * ========================================================= */
+
+function switchAdminTab(
+  level,
+  button
+){
+
+  STATE.adminLevel =
+    level;
+
+  document
+    .querySelectorAll(
+      '.admin-tab'
+    )
+    .forEach(
+      x =>
+        x.classList.remove(
+          'active'
+        )
+    );
+
+  button.classList.add(
+    'active'
+  );
+
+  loadAdminApplications(
+    level
+  );
+
+}
+
+
+function loadAdminApplications(
+  level
+){
+
+  document
+    .getElementById(
+      'adminTableArea'
+    )
+    .innerHTML =
+      '<div style="padding:25px;text-align:center;">กำลังโหลดรายการ...</div>';
+
+
+  google.script.run
+    .withSuccessHandler(
+      renderAdminTable
+    )
+    .withFailureHandler(
+      handleAdminError
+    )
+    .getAdminApplications(
+      STATE.adminToken,
+      level
+    );
+
+}
+
+
+function renderAdminTable(result){
+
+  const rows =
+    result.rows || [];
+
+  if(!rows.length){
+
+    document
+      .getElementById(
+        'adminTableArea'
+      )
+      .innerHTML =
+        '<div style="padding:30px;text-align:center;color:#7a8999;">ยังไม่มีผู้สมัครในระดับนี้</div>';
+
+    return;
+  }
+
+
+  const html = `
+    <table>
+      <thead>
+        <tr>
+          <th>เลขที่สมัคร</th>
+          <th>วันที่สมัคร</th>
+          <th>ชื่อ-นามสกุล</th>
+          <th>ประเภท</th>
+          <th>หลักสูตร</th>
+          <th>สาขาวิชา</th>
+          <th>เบอร์โทรศัพท์</th>
+          <th>สถานะ</th>
+          <th>ดูข้อมูล</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        ${rows.map(
+          (row,index) => `
+            <tr>
+
+              <td>
+                ${escapeHtml(
+                  row['เลขที่สมัคร']
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  row['วันที่สมัคร']
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  row['ชื่อ-นามสกุล']
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  row['ประเภทผู้สมัคร']
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  row['หลักสูตร']
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  row['สาขาวิชา']
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  row['เบอร์โทรศัพท์']
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  row['สถานะการสมัคร']
+                )}
+              </td>
+
+              <td>
+                <td>
+  <button
+    class="view-btn"
+    onclick="showDetail('${encodeURIComponent(JSON.stringify(row))}')">
+    ดูข้อมูล
+  </button>
+</td>
+              </td>
+
+            </tr>
+          `
+        ).join('')}
+
+      </tbody>
+    </table>
+  `;
+
+
+  document
+    .getElementById(
+      'adminTableArea'
+    )
+    .innerHTML =
+      html;
+
+}
+
+
+/* =========================================================
+ * CITIZEN SEARCH
+ * ========================================================= */
+
+function searchCitizen(){
+
+  const citizenId =
+    value(
+      'adminCitizenSearch'
+    )
+    .replace(/\D/g,'');
+
+  if(
+    !/^\d{13}$/.test(
+      citizenId
+    )
+  ){
+
+    showToast(
+      'กรุณากรอกเลขบัตรประชาชน 13 หลัก',
+      'error'
+    );
+
+    return;
+  }
+
+
+  const box =
+    document.getElementById(
+      'searchResult'
+    );
+
+  box.innerHTML =
+    '<div style="padding:15px;text-align:center;color:#718096;">กำลังตรวจสอบ...</div>';
+
+
+  google.script.run
+    .withSuccessHandler(
+      result => {
+
+        if(
+          !result.found
+        ){
+
+          box.innerHTML =
+            `
+              <div style="
+                padding:15px;
+                border-radius:12px;
+                background:#fff4f4;
+                color:#b83c43;
+              ">
+                ไม่พบข้อมูลผู้สมัครจากเลขบัตรประชาชนนี้
+              </div>
+            `;
+
+          return;
+        }
+
+
+        showSearchResult(
+          result.data
+        );
+
+      }
+    )
+    .withFailureHandler(
+      handleAdminError
+    )
+    .adminSearchCitizen(
+      STATE.adminToken,
+      citizenId
+    );
+
+}
+
+
+function showSearchResult(
+  data
+){
+
+  const keys =
+    [
+      'เลขที่สมัคร',
+      'วันที่สมัคร',
+      'เวลาสมัคร',
+      'สถานะการสมัคร',
+      'ประเภทผู้สมัคร',
+      'ชื่อ-นามสกุล',
+      'เลขบัตรประจำตัวประชาชน',
+      'วันเดือนปีเกิด',
+      'เบอร์โทรศัพท์',
+      'หลักสูตร',
+      'สาขาวิชา',
+      'ชั้นปี',
+      'ส่วนงาน',
+      'ระดับที่สมัคร',
+      'พ.ศ. ที่สอบผ่านระดับก่อนหน้า',
+      'เลขที่ใบประกาศระดับก่อนหน้า',
+      'สำนักเรียน',
+      'คณะจังหวัด'
+    ];
+
+
+  const html =
+    `
+      <div class="detail-grid">
+
+        ${
+          keys
+            .map(
+              key => `
+                <div class="detail">
+
+                  <div class="detail-label">
+                    ${escapeHtml(key)}
+                  </div>
+
+                  <div class="detail-value">
+                    ${escapeHtml(
+                      data[key] || '-'
+                    )}
+                  </div>
+
+                </div>
+              `
+            )
+            .join('')
+        }
+
+        <div class="detail full">
+
+          <div class="detail-label">
+            หลักฐาน
+          </div>
+
+          ${
+            data['ลิงก์ไฟล์หลักฐาน']
+              ? `
+                <a
+                  class="file-link"
+                  href="${escapeAttribute(data['ลิงก์ไฟล์หลักฐาน'])}"
+                  target="_blank">
+
+                  เปิดไฟล์หลักฐาน
+
+                </a>
+              `
+              : '<span style="color:#8a98a9;">ไม่มีไฟล์แนบ</span>'
+          }
+
+        </div>
+
+      </div>
+    `;
+
+
+  document
+    .getElementById(
+      'searchResult'
+    )
+    .innerHTML =
+      html;
+
+}
+
+
+/* =========================================================
+ * DETAIL
+ * ========================================================= */
+
+function showDetail(encoded){
+
+  let data;
+
+  try{
+
+    data =
+      JSON.parse(
+        decodeURIComponent(
+          encoded
+        )
+      );
+
+  }catch(error){
+
+    showToast(
+      'ไม่สามารถเปิดรายละเอียดได้',
+      'error'
+    );
+
+    return;
+  }
+
+
+  const keys =
+    Object.keys(
+      data
+    );
+
+
+  const html =
+    `
+      <div class="detail-grid">
+
+        ${
+          keys
+            .map(
+              key => {
+
+                const value =
+                  data[key] || '';
+
+                if(
+                  key ===
+                  'ลิงก์ไฟล์หลักฐาน' &&
+                  value
+                ){
+
+                  return `
+                    <div class="detail full">
+
+                      <div class="detail-label">
+                        ${escapeHtml(key)}
+                      </div>
+
+                      <div class="detail-value">
+
+                        <a
+                          class="file-link"
+                          href="${escapeAttribute(value)}"
+                          target="_blank">
+
+                          เปิดดูหลักฐาน / รูปภาพ
+
+                        </a>
+
+                      </div>
+
+                    </div>
+                  `;
+
+                }
+
+
+                return `
+                  <div class="detail">
+
+                    <div class="detail-label">
+                      ${escapeHtml(key)}
+                    </div>
+
+                    <div class="detail-value">
+                      ${escapeHtml(value)}
+                    </div>
+
+                  </div>
+                `;
+
+              }
+            )
+            .join('')
+        }
+
+      </div>
+    `;
+
+
+  document
+    .getElementById(
+      'detailBody'
+    )
+    .innerHTML =
+      html;
+
+
+  document
+    .getElementById(
+      'detailModal'
+    )
+    .classList.add(
+      'show'
+    );
+
+}
+
+
+/* =========================================================
+ * ADMIN ERROR
+ * ========================================================= */
+
+function handleAdminError(
+  error
+){
+
+  const message =
+    error &&
+    error.message
+      ? error.message
+      : 'เกิดข้อผิดพลาด';
+
+
+  if(
+    message.includes(
+      'เซสชัน'
+    ) ||
+    message.includes(
+      'ไม่มีสิทธิ์'
+    )
+  ){
+
+    sessionStorage.removeItem(
+      'dhamma_admin_token'
+    );
+
+    STATE.adminToken =
+      '';
+
+    location.reload();
+
+    return;
+  }
+
+
+  showToast(
+    message,
+    'error'
+  );
+
+}
+
+
+/* =========================================================
+ * MODAL
+ * ========================================================= */
+
+function closeModal(id){
+
+  document
+    .getElementById(id)
+    .classList.remove(
+      'show'
+    );
+
+}
+
+
+/* =========================================================
+ * UTILS
+ * ========================================================= */
+
+function value(id){
+
+  const el =
+    document.getElementById(
+      id
+    );
+
+  return el
+    ? String(
+        el.value || ''
+      ).trim()
+    : '';
+
+}
+
+
+function formatNumber(value){
+
+  return Number(
+    value || 0
+  ).toLocaleString(
+    'th-TH'
+  );
+
+}
+
+
+function escapeHtml(value){
+
+  return String(
+    value ?? ''
+  )
+  .replace(
+    /&/g,
+    '&amp;'
+  )
+  .replace(
+    /</g,
+    '&lt;'
+  )
+  .replace(
+    />/g,
+    '&gt;'
+  )
+  .replace(
+    /"/g,
+    '&quot;'
+  )
+  .replace(
+    /'/g,
+    '&#039;'
+  );
+
+}
+
+
+function escapeAttribute(value){
+
+  return String(
+    value ?? ''
+  )
+  .replace(
+    /"/g,
+    '&quot;'
+  )
+  .replace(
+    /</g,
+    '&lt;'
+  )
+  .replace(
+    />/g,
+    '&gt;'
+  );
+
+}
+
+
+function showToast(
+  message,
+  type
+){
+
+  const toast =
+    document.getElementById(
+      'toast'
+    );
+
+  toast.textContent =
+    message;
+
+  toast.className =
+    'toast show ' +
+    (
+      type === 'success'
+        ? 'success'
+        : type === 'error'
+          ? 'error'
+          : ''
+    );
+
+
+  clearTimeout(
+    window.__toastTimer
+  );
+
+  window.__toastTimer =
+    setTimeout(
+      () => {
+
+        toast.classList.remove(
+          'show'
+        );
+
+      },
+      3500
+    );
+
+}
+
+function resetForm() {
+  // ล้างค่าในช่องกรอก (ยกเว้นช่อง Login และชื่อสำนักเรียนเริ่มต้น)
+  document.querySelectorAll('input').forEach(el => {
+    if (el.id !== 'adminUsername' && el.id !== 'adminPassword' && el.id !== 'adminCitizenSearch' && el.id !== 'school') {
+      el.value = '';
+    }
+  });
+  document.querySelectorAll('select').forEach(el => el.value = '');
+  document.getElementById('school').value = 'สำนักเรียนวัดธาตุ คณะจังหวัดขอนแก่น';
+
+  // คืนค่า State
+  STATE.applicantType = '';
+  STATE.level = '';
+  STATE.file = null;
+
+  // คืนค่า UI ให้กลับไปเป็นค่าเริ่มต้น
+  document.querySelectorAll('.type-card, .level-card').forEach(c => c.classList.remove('active'));
+  hideApplicantExtra();
+  hideCertificateArea();
+  document.getElementById('fileResult').classList.remove('show');
+  
+  // สลับหน้าจอกลับไปที่ฟอร์มสมัคร
+  document.getElementById('successScreen').classList.remove('show');
+  document.getElementById('registrationBody').style.display = 'block';
+  
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+</script>
+
+</body>
+</html>
