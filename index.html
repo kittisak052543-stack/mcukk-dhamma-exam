@@ -2840,22 +2840,39 @@ function apiGetJsonp(
           'script'
         );
 
-      const cleanup = () => {
+      let cleanupTimer = null;
+
+      const cleanup = (
+        removeCallback = true
+      ) => {
 
         clearTimeout(
           timer
         );
 
+        if (
+          cleanupTimer
+        ) {
+          clearTimeout(
+            cleanupTimer
+          );
+          cleanupTimer = null;
+        }
+
         script.remove();
 
-        try {
-          delete window[
-            callbackName
-          ];
-        } catch (error) {
-          window[
-            callbackName
-          ] = undefined;
+        if (
+          removeCallback
+        ) {
+          try {
+            delete window[
+              callbackName
+            ];
+          } catch (error) {
+            window[
+              callbackName
+            ] = undefined;
+          }
         }
 
       };
@@ -2924,8 +2941,33 @@ function apiGetJsonp(
         setTimeout(
           () => {
 
-            finish(
-              reject,
+            if (settled) {
+              return;
+            }
+
+            settled = true;
+
+            /*
+             * อย่าลบ callback ทันทีเมื่อ timeout
+             *
+             * Apps Script Web App อาจตอบกลับช้าหลังจาก
+             * timeout ของ Browser ได้ หากลบ callback ทันที
+             * script ที่มาถึงภายหลังจะกลายเป็น
+             * ReferenceError: callback is not defined
+             */
+            script.remove();
+
+            cleanupTimer =
+              setTimeout(
+                () => {
+                  cleanup(
+                    true
+                  );
+                },
+                15000
+              );
+
+            reject(
               new Error(
                 'API ตอบสนองช้าเกินกำหนด'
               )
@@ -3055,7 +3097,7 @@ async function apiPostAndWait(
             requestId:
               requestId
           },
-          4000
+          8000
         );
 
 
@@ -4455,13 +4497,13 @@ async function adminLogin(){
         },
         {
           maxAttempts:
-            12,
+            10,
 
           initialDelay:
-            200,
+            350,
 
           maxDelay:
-            700,
+            1200,
 
           timeoutMessage:
             'ระบบเข้าสู่ระบบใช้เวลานานเกินกำหนด'
@@ -4549,11 +4591,14 @@ function showAdminApp(){
       'none';
 
 
-  loadDashboard();
-
-  loadAdminApplications(
-    'TRI'
-  );
+  /*
+   * โหลด Dashboard ก่อน แล้วค่อยโหลดรายการ
+   * เพื่อลดจำนวน POST/JSONP ที่ยิงพร้อมกัน
+   */
+  loadDashboard()
+    .then(
+      () => loadAdminApplications('TRI')
+    );
 
 }
 
@@ -4635,13 +4680,13 @@ async function loadDashboard(){
         },
         {
           maxAttempts:
-            15,
+            10,
 
           initialDelay:
-            150,
+            350,
 
           maxDelay:
-            700,
+            1200,
 
           timeoutMessage:
             'โหลด Dashboard ไม่สำเร็จ'
@@ -4926,13 +4971,13 @@ async function loadAdminApplications(
         },
         {
           maxAttempts:
-            15,
+            10,
 
           initialDelay:
-            150,
+            350,
 
           maxDelay:
-            700,
+            1200,
 
           timeoutMessage:
             'โหลดรายการผู้สมัครไม่สำเร็จ'
