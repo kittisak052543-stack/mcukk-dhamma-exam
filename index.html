@@ -2780,59 +2780,483 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-async function init(){
+function createRequestId(){
 
-  const BOOTSTRAP_CACHE_KEY =
-    'mcukk_dhamma_bootstrap_v1';
+  if (
+    window.crypto &&
+    typeof window.crypto.randomUUID === 'function'
+  ) {
+    return window.crypto.randomUUID();
+  }
 
-  const BOOTSTRAP_CACHE_MAX_AGE =
-    30 * 60 * 1000; // 30 นาที
+  return (
+    Date.now().toString(36) +
+    Math.random()
+      .toString(36)
+      .slice(2)
+  );
+}
+
+
+function waitMs(ms){
+
+  return new Promise(
+    resolve =>
+      setTimeout(
+        resolve,
+        ms
+      )
+  );
+}
+
+
+/*
+ * GET ผ่าน JSONP
+ *
+ * GitHub Pages -> Apps Script:
+ * ใช้ JSONP เฉพาะคำขอ GET เพื่อหลีกเลี่ยงปัญหา
+ * redirect/CORS ของ Apps Script Web App
+ */
+function apiGetJsonp(
+  params,
+  timeoutMs = 5000
+){
+
+  return new Promise(
+    (resolve, reject) => {
+
+      const callbackName =
+        '__mcukk_jsonp_' +
+        Date.now().toString(36) +
+        '_' +
+        Math.random()
+          .toString(36)
+          .slice(2);
+
+      let settled = false;
+
+      const script =
+        document.createElement(
+          'script'
+        );
+
+      const cleanup = () => {
+
+        clearTimeout(
+          timer
+        );
+
+        script.remove();
+
+        try {
+          delete window[
+            callbackName
+          ];
+        } catch (error) {
+          window[
+            callbackName
+          ] = undefined;
+        }
+
+      };
+
+
+      const finish = (
+        fn,
+        value
+      ) => {
+
+        if (settled) return;
+
+        settled = true;
+
+        cleanup();
+
+        fn(value);
+      };
+
+
+      window[
+        callbackName
+      ] = data => {
+
+        finish(
+          resolve,
+          data
+        );
+
+      };
+
+
+      script.onerror = () => {
+
+        finish(
+          reject,
+          new Error(
+            'ไม่สามารถเชื่อมต่อ API ได้'
+          )
+        );
+
+      };
+
+
+      const query = new URLSearchParams(
+        {
+          ...params,
+          callback:
+            callbackName,
+          _: String(
+            Date.now()
+          )
+        }
+      );
+
+
+      script.src =
+        API_URL +
+        '?' +
+        query.toString();
+
+      script.async = true;
+
+
+      const timer =
+        setTimeout(
+          () => {
+
+            finish(
+              reject,
+              new Error(
+                'API ตอบสนองช้าเกินกำหนด'
+              )
+            );
+
+          },
+          timeoutMs
+        );
+
+
+      document
+        .head
+        .appendChild(
+          script
+        );
+
+    }
+  );
+}
+
+
+/*
+ * POST จาก GitHub Pages
+ *
+ * Apps Script อาจส่ง redirect response จน Browser
+ * อ่าน POST response ไม่ได้
+ *
+ * ดังนั้น:
+ * 1. ส่ง POST แบบ fire-and-forget
+ * 2. ใช้ requestId
+ * 3. ตรวจผลผ่าน GET/JSONP
+ */
+async function apiPostAndWait(
+  action,
+  payload = {},
+  options = {}
+){
+
+  const requestId =
+    options.requestId ||
+    createRequestId();
+
+
+  const requestBody = {
+    action:
+      action,
+
+    requestId:
+      requestId,
+
+    ...payload
+  };
 
 
   /*
-   * =====================================================
-   * ฟังก์ชันแสดงข้อมูลลงหน้าเว็บ
-   * =====================================================
+   * ไม่ await POST
+   * เพื่อไม่ให้หน้าเว็บค้างรอ redirect/CORS
    */
+  fetch(
+    API_URL,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type':
+          'text/plain;charset=utf-8'
+      },
+      body:
+        JSON.stringify(
+          requestBody
+        )
+    }
+  ).catch(
+    () => {
+      /*
+       * จงใจไม่แสดง error
+       * เพราะ Apps Script อาจทำงานสำเร็จ
+       * แม้ Browser จะอ่าน POST response ไม่ได้
+       */
+    }
+  );
+
+
+  const maxAttempts =
+    Number(
+      options.maxAttempts ||
+      20
+    );
+
+
+  const initialDelay =
+    Number(
+      options.initialDelay ||
+      250
+    );
+
+
+  const maxDelay =
+    Number(
+      options.maxDelay ||
+      1000
+    );
+
+
+  let delay =
+    initialDelay;
+
+
+  for (
+    let attempt = 0;
+    attempt < maxAttempts;
+    attempt++
+  ){
+
+    await waitMs(
+      delay
+    );
+
+
+    try {
+
+      const status =
+        await apiGetJsonp(
+          {
+            api:
+              'requestStatus',
+
+            requestId:
+              requestId
+          },
+          4000
+        );
+
+
+      if (
+        status &&
+        status.success === false
+      ){
+
+        throw new Error(
+          status.error ||
+          'ไม่สามารถประมวลผลคำขอได้'
+        );
+
+      }
+
+
+      const data =
+        status &&
+        status.data;
+
+
+      if (
+        data &&
+        data.status ===
+          'completed'
+      ){
+
+        return data.result;
+
+      }
+
+
+      if (
+        data &&
+        data.status ===
+          'failed'
+      ){
+
+        throw new Error(
+          data.error ||
+          'การประมวลผลไม่สำเร็จ'
+        );
+
+      }
+
+
+    } catch (error) {
+
+      if (
+        error &&
+        error.message &&
+        !/API ตอบสนองช้าเกินกำหนด|ไม่สามารถเชื่อมต่อ API ได้/.test(
+          error.message
+        )
+      ){
+
+        throw error;
+
+      }
+
+    }
+
+
+    delay =
+      Math.min(
+        maxDelay,
+        Math.round(
+          delay * 1.35
+        )
+      );
+  }
+
+
+  throw new Error(
+    options.timeoutMessage ||
+    'ระบบใช้เวลาประมวลผลนานเกินกำหนด กรุณาตรวจสอบข้อมูลอีกครั้ง'
+  );
+}
+
+
+function fireAndForgetPost(
+  action,
+  payload = {}
+){
+
+  const requestId =
+    createRequestId();
+
+
+  fetch(
+    API_URL,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type':
+          'text/plain;charset=utf-8'
+      },
+      body:
+        JSON.stringify({
+          action:
+            action,
+
+          requestId:
+            requestId,
+
+          ...payload
+        })
+    }
+  ).catch(
+    () => {}
+  );
+
+
+  return requestId;
+}
+
+
+async function init(){
+
+  const BOOTSTRAP_CACHE_KEY =
+    'mcukk_dhamma_bootstrap_v2';
+
+  const BOOTSTRAP_CACHE_MAX_AGE =
+    30 * 60 * 1000;
+
+
   function applyBootstrap(){
 
-    document
-      .getElementById('logo')
-      .src =
-        BOOTSTRAP.system.logo || '';
+    const system =
+      BOOTSTRAP.system || {};
 
-    document
-      .getElementById('systemTitle')
-      .textContent =
-        BOOTSTRAP.system.title || '';
 
-    document
-      .getElementById('organization')
-      .textContent =
-        BOOTSTRAP.system.organization || '';
+    const logo =
+      document.getElementById(
+        'logo'
+      );
 
-    document
-      .getElementById('maxFileText')
-      .textContent =
-        BOOTSTRAP.system.maxFileMB || '';
+    if (logo) {
+      logo.src =
+        system.logo || '';
+    }
 
-    document
-      .getElementById('certificateExample')
-      .src =
-        BOOTSTRAP.system.certificateExample || '';
+
+    const systemTitle =
+      document.getElementById(
+        'systemTitle'
+      );
+
+    if (systemTitle) {
+      systemTitle.textContent =
+        system.title ||
+        'ระบบสมัครสอบธรรมศึกษา';
+    }
+
+
+    const organization =
+      document.getElementById(
+        'organization'
+      );
+
+    if (organization) {
+      organization.textContent =
+        system.organization || '';
+    }
+
+
+    const maxFileText =
+      document.getElementById(
+        'maxFileText'
+      );
+
+    if (maxFileText) {
+      maxFileText.textContent =
+        system.maxFileMB || 10;
+    }
+
+
+    const certificateExample =
+      document.getElementById(
+        'certificateExample'
+      );
+
+    if (certificateExample) {
+      certificateExample.src =
+        system.certificateExample ||
+        '';
+    }
 
 
     fillProgramSelect();
     fillDepartmentSelect();
     renderCoordinators();
 
+
     hideApplicantExtra();
     hideCertificateArea();
 
 
-    if(
+    if (
       STATE.adminToken
-    ){
+    ) {
 
       showAdminApp();
 
@@ -2842,15 +3266,10 @@ async function init(){
 
 
   /*
-   * =====================================================
-   * 1. โหลด Cache ก่อนทันที
-   * =====================================================
+   * 1. แสดง Cache ทันที
+   *    ไม่รอ Google Apps Script
    */
-  let cachedBootstrap =
-    null;
-
-
-  try{
+  try {
 
     const raw =
       localStorage.getItem(
@@ -2858,7 +3277,7 @@ async function init(){
       );
 
 
-    if(raw){
+    if (raw) {
 
       const parsed =
         JSON.parse(
@@ -2866,26 +3285,27 @@ async function init(){
         );
 
 
-      if(
+      if (
         parsed &&
-        parsed.data &&
-        parsed.savedAt
-      ){
+        parsed.data
+      ) {
 
         const age =
           Date.now() -
           Number(
-            parsed.savedAt
+            parsed.savedAt || 0
           );
 
 
-        if(
+        if (
           age <
           BOOTSTRAP_CACHE_MAX_AGE
-        ){
+        ) {
 
-          cachedBootstrap =
+          BOOTSTRAP =
             parsed.data;
+
+          applyBootstrap();
 
         }
 
@@ -2893,7 +3313,7 @@ async function init(){
 
     }
 
-  }catch(error){
+  } catch (error) {
 
     console.warn(
       'BOOTSTRAP CACHE READ ERROR:',
@@ -2904,84 +3324,32 @@ async function init(){
 
 
   /*
-   * =====================================================
-   * 2. ถ้ามี Cache → แสดงหน้าเว็บทันที
-   * =====================================================
+   * 2. ดึงข้อมูลล่าสุดแบบ Background
+   *
+   * ใช้ JSONP จึงไม่ติดปัญหา CORS redirect
+   * และไม่ทำให้หน้าเว็บต้องรอ
    */
-  if(
-    cachedBootstrap
-  ){
+  try {
 
-    BOOTSTRAP =
-      cachedBootstrap;
-
-    applyBootstrap();
-
-  }
-
-
-  /*
-   * =====================================================
-   * 3. ดึงข้อมูลใหม่จาก Google Sheets แบบเบื้องหลัง
-   * =====================================================
-   */
-  try{
-
-    const controller =
-      new AbortController();
-
-
-    const timeout =
-      setTimeout(
-        () => {
-          controller.abort();
+    const result =
+      await apiGetJsonp(
+        {
+          api:
+            'bootstrap'
         },
         5000
       );
 
 
-    const response =
-      await fetch(
-        API_URL +
-        '?api=bootstrap',
-        {
-          method: 'GET',
-          cache: 'no-store',
-          signal:
-            controller.signal
-        }
-      );
-
-
-    clearTimeout(
-      timeout
-    );
-
-
-    if(
-      !response.ok
-    ){
-
-      throw new Error(
-        'เชื่อมต่อ API ไม่สำเร็จ: HTTP ' +
-        response.status
-      );
-
-    }
-
-
-    const result =
-      await response.json();
-
-
-    if(
+    if (
       !result ||
       !result.success ||
       !result.data
-    ){
+    ) {
 
       throw new Error(
-        result && result.error
+        result &&
+        result.error
           ? result.error
           : 'API ไม่ส่งข้อมูลกลับมา'
       );
@@ -2989,21 +3357,11 @@ async function init(){
     }
 
 
-    /*
-     * ===================================================
-     * อัปเดตข้อมูลล่าสุด
-     * ===================================================
-     */
     BOOTSTRAP =
       result.data;
 
 
-    /*
-     * ===================================================
-     * บันทึก Cache
-     * ===================================================
-     */
-    try{
+    try {
 
       localStorage.setItem(
         BOOTSTRAP_CACHE_KEY,
@@ -3016,7 +3374,7 @@ async function init(){
         })
       );
 
-    }catch(cacheError){
+    } catch (cacheError) {
 
       console.warn(
         'BOOTSTRAP CACHE WRITE ERROR:',
@@ -3026,20 +3384,25 @@ async function init(){
     }
 
 
-    /*
-     * ===================================================
-     * ถ้ายังไม่มี Cache เดิม
-     * ให้แสดง UI หลัง API โหลดเสร็จ
-     *
-     * ถ้ามี Cache แล้ว:
-     * อัปเดต UI ด้วยข้อมูลใหม่
-     * โดยไม่ต้องโหลดหน้าใหม่
-     * ===================================================
-     */
     applyBootstrap();
 
 
-  }catch(error){
+  } catch (error) {
+
+    /*
+     * ถ้า Cache มีอยู่แล้ว
+     * ไม่ต้องรบกวนผู้ใช้ด้วย Toast
+     */
+    const hasUsableBootstrap =
+      BOOTSTRAP &&
+      Array.isArray(
+        BOOTSTRAP.programs
+      ) &&
+      (
+        BOOTSTRAP.programs.length >
+        0
+      );
+
 
     console.error(
       'BOOTSTRAP API ERROR:',
@@ -3047,37 +3410,21 @@ async function init(){
     );
 
 
-    /*
-     * มี Cache ใช้งานอยู่แล้ว
-     * ไม่ต้องทำอะไรต่อ
-     */
-    if(
-      cachedBootstrap
-    ){
+    if (
+      !hasUsableBootstrap
+    ) {
 
-      return;
+      showToast(
+        'ไม่สามารถโหลดข้อมูลระบบจาก Google Sheets ได้ กรุณารีเฟรชหน้าอีกครั้ง',
+        'error'
+      );
 
     }
-
-
-    /*
-     * ไม่มี Cache และ API ใช้งานไม่ได้จริง
-     */
-    showToast(
-      'ไม่สามารถโหลดข้อมูลระบบจาก Google Sheets ได้',
-      'error'
-    );
-
-    return;
 
   }
 
 }
 
-
-/* =========================================================
- * PROGRAM
- * ========================================================= */
 
 function fillProgramSelect(){
 
@@ -3497,7 +3844,7 @@ function renderCoordinators(){
 
 async function submitForm(){
 
-  if(
+  if (
     !BOOTSTRAP.system.open
   ){
 
@@ -3519,7 +3866,8 @@ async function submitForm(){
       payload
     );
 
-  if(
+
+  if (
     !clientValidation.ok
   ){
 
@@ -3541,6 +3889,12 @@ async function submitForm(){
       'submitButton'
     );
 
+
+  if (!button) {
+    return;
+  }
+
+
   button.disabled =
     true;
 
@@ -3548,9 +3902,9 @@ async function submitForm(){
     'กำลังบันทึกการสมัคร...';
 
 
-  try{
+  try {
 
-    if(
+    if (
       payload.level === 'THO' ||
       payload.level === 'EK'
     ){
@@ -3563,148 +3917,53 @@ async function submitForm(){
     }
 
 
-const requestId =
-  (
-    crypto &&
-    typeof crypto.randomUUID === 'function'
-  )
-    ? crypto.randomUUID()
-    : (
-        Date.now().toString(36) +
-        Math.random().toString(36).slice(2)
+    const requestId =
+      createRequestId();
+
+
+    const registrationResult =
+      await apiPostAndWait(
+        'submitRegistration',
+        {
+          payload:
+            payload
+        },
+        {
+          requestId:
+            requestId,
+
+          maxAttempts:
+            24,
+
+          initialDelay:
+            200,
+
+          maxDelay:
+            800,
+
+          timeoutMessage:
+            'ระบบใช้เวลาบันทึกข้อมูลนานเกินกำหนด กรุณาตรวจสอบเลขบัตรประชาชนก่อนลองใหม่'
+        }
       );
 
 
-await fetch(
-  API_URL,
-  {
-    method: 'POST',
-    headers: {
-      'Content-Type':
-        'text/plain;charset=utf-8'
-    },
-    body: JSON.stringify({
-      action:
-        'submitRegistration',
+    if (
+      !registrationResult
+    ){
 
-      requestId:
-        requestId,
+      throw new Error(
+        'ไม่พบผลการสมัคร'
+      );
 
-      payload:
-        payload
-    })
-  }
-).catch(
-  () => {
-    // Apps Script อาจ redirect response
-    // ซึ่ง Browser บน GitHub Pages อาจรายงาน CORS
-    // แต่คำขอถูกประมวลผลแล้ว จึงไม่ต้องแสดง warning
-  }
-);
+    }
 
 
-/*
- * รอให้ Apps Script บันทึกข้อมูล
- * แล้วตรวจผลด้วย GET
- */
-let registrationResult =
-  null;
-
-for(
-  let attempt = 0;
-  attempt < 10;
-  attempt++
-){
-
-  await new Promise(
-    resolve =>
-      setTimeout(
-        resolve,
-        1000
-      )
-  );
-
-
-  const statusResponse =
-    await fetch(
-      API_URL +
-      '?api=registrationStatus&requestId=' +
-      encodeURIComponent(
-        requestId
-      ),
-      {
-        method: 'GET',
-        cache: 'no-store'
-      }
+    handleSubmitSuccess(
+      registrationResult
     );
 
 
-  if(
-    !statusResponse.ok
-  ){
-    continue;
-  }
-
-
-  const statusResult =
-    await statusResponse.json();
-
-
-  if(
-    statusResult &&
-    statusResult.success &&
-    statusResult.data &&
-    statusResult.data.status === 'completed'
-  ){
-
-    registrationResult =
-      statusResult.data.result;
-
-    break;
-  }
-
-
-  if(
-    statusResult &&
-    statusResult.success &&
-    statusResult.data &&
-    statusResult.data.status === 'pending'
-  ){
-
-    continue;
-  }
-
-
-  if(
-    statusResult &&
-    statusResult.success === false
-  ){
-
-    throw new Error(
-      statusResult.error ||
-      'ไม่สามารถตรวจสอบผลการสมัครได้'
-    );
-  }
-
-}
-
-
-if(
-  !registrationResult
-){
-
-  throw new Error(
-    'บันทึกข้อมูลแล้ว แต่ไม่สามารถรับผลการสมัครกลับมาได้'
-  );
-
-}
-
-
-handleSubmitSuccess(
-  registrationResult
-);
-
-  }catch(error){
+  } catch (error) {
 
     handleSubmitError(
       error
@@ -4136,15 +4395,23 @@ function openAdminLogin(){
 }
 
 
-function adminLogin(){
+async function adminLogin(){
 
   const username =
-    value('adminUsername');
+    value(
+      'adminUsername'
+    );
 
   const password =
-    value('adminPassword');
+    value(
+      'adminPassword'
+    );
 
-  if(!username || !password){
+
+  if (
+    !username ||
+    !password
+  ){
 
     showToast(
       'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน',
@@ -4160,6 +4427,7 @@ function adminLogin(){
       'adminLoginButton'
     );
 
+
   button.disabled =
     true;
 
@@ -4167,78 +4435,89 @@ function adminLogin(){
     'กำลังเข้าสู่ระบบ...';
 
 
-  google.script.run
-    .withSuccessHandler(
-      result => {
+  try {
 
-        button.disabled =
-          false;
+    const result =
+      await apiPostAndWait(
+        'adminLogin',
+        {
+          username:
+            username,
 
-        button.textContent =
-          'เข้าสู่ระบบ';
+          password:
+            password
+        },
+        {
+          maxAttempts:
+            12,
 
+          initialDelay:
+            200,
 
-        if(
-          !result ||
-          !result.success
-        ){
+          maxDelay:
+            700,
 
-          showToast(
-            result &&
-            result.message
-              ? result.message
-              : 'เข้าสู่ระบบไม่สำเร็จ',
-            'error'
-          );
-
-          return;
+          timeoutMessage:
+            'ระบบเข้าสู่ระบบใช้เวลานานเกินกำหนด'
         }
+      );
 
 
-        STATE.adminToken =
-          result.token;
+    if (
+      !result ||
+      !result.success
+    ){
 
-        sessionStorage.setItem(
-          'dhamma_admin_token',
-          result.token
-        );
+      throw new Error(
+        result &&
+        result.message
+          ? result.message
+          : 'เข้าสู่ระบบไม่สำเร็จ'
+      );
 
-        closeModal(
-          'adminLoginModal'
-        );
+    }
 
-        showAdminApp();
 
-      }
-    )
-    .withFailureHandler(
-      error => {
+    STATE.adminToken =
+      result.token;
 
-        button.disabled =
-          false;
 
-        button.textContent =
-          'เข้าสู่ระบบ';
-
-        showToast(
-          error.message ||
-          'เข้าสู่ระบบไม่สำเร็จ',
-          'error'
-        );
-
-      }
-    )
-    .adminLogin(
-      username,
-      password
+    sessionStorage.setItem(
+      'dhamma_admin_token',
+      result.token
     );
+
+
+    closeModal(
+      'adminLoginModal'
+    );
+
+
+    showAdminApp();
+
+
+  } catch (error) {
+
+    showToast(
+      error &&
+      error.message
+        ? error.message
+        : 'เข้าสู่ระบบไม่สำเร็จ',
+      'error'
+    );
+
+  } finally {
+
+    button.disabled =
+      false;
+
+    button.textContent =
+      'เข้าสู่ระบบ';
+
+  }
 
 }
 
-
-/* =========================================================
- * SHOW ADMIN
- * ========================================================= */
 
 function showAdminApp(){
 
@@ -4278,43 +4557,118 @@ function showAdminApp(){
  * ========================================================= */
 
 function adminLogout(){
-  const token = STATE.adminToken;
-  STATE.adminToken = '';
-  sessionStorage.removeItem('dhamma_admin_token');
 
-  google.script.run
-    .withSuccessHandler(() => {
-      // สลับหน้าจอกลับมาหน้าฟอร์มผู้ใช้
-      document.getElementById('adminApp').style.display = 'none';
-      document.getElementById('publicApp').style.display = 'block';
-      document.querySelector('.admin-gear').style.display = '';
-      resetForm();
-    })
-    .withFailureHandler(() => {
-      document.getElementById('adminApp').style.display = 'none';
-      document.getElementById('publicApp').style.display = 'block';
-      document.querySelector('.admin-gear').style.display = '';
-    })
-    .adminLogout(token);
+  const token =
+    STATE.adminToken;
+
+
+  STATE.adminToken =
+    '';
+
+  sessionStorage.removeItem(
+    'dhamma_admin_token'
+  );
+
+
+  /*
+   * สลับ UI ทันที
+   * ไม่รอ Server เพื่อไม่ให้ผู้ใช้รู้สึกว่าปุ่มค้าง
+   */
+  document
+    .getElementById(
+      'adminApp'
+    )
+    .style.display =
+      'none';
+
+
+  document
+    .getElementById(
+      'publicApp'
+    )
+    .style.display =
+      'block';
+
+
+  document
+    .querySelector(
+      '.admin-gear'
+    )
+    .style.display =
+      '';
+
+
+  resetForm();
+
+
+  if (token) {
+
+    fireAndForgetPost(
+      'adminLogout',
+      {
+        token:
+          token
+      }
+    );
+
+  }
+
 }
 
 
-/* =========================================================
- * DASHBOARD
- * ========================================================= */
+async function loadDashboard(){
 
-function loadDashboard(){
+  try {
 
-  google.script.run
-    .withSuccessHandler(
-      renderDashboard
-    )
-    .withFailureHandler(
-      handleAdminError
-    )
-    .getAdminDashboard(
-      STATE.adminToken
+    const result =
+      await apiPostAndWait(
+        'getAdminDashboard',
+        {
+          token:
+            STATE.adminToken
+        },
+        {
+          maxAttempts:
+            15,
+
+          initialDelay:
+            150,
+
+          maxDelay:
+            700,
+
+          timeoutMessage:
+            'โหลด Dashboard ไม่สำเร็จ'
+        }
+      );
+
+
+    if (
+      !result ||
+      !result.success
+    ){
+
+      throw new Error(
+        result &&
+        result.message
+          ? result.message
+          : 'โหลด Dashboard ไม่สำเร็จ'
+      );
+
+    }
+
+
+    renderDashboard(
+      result
     );
+
+  } catch (error) {
+
+    handleAdminError(
+      error
+    );
+
+  }
 
 }
 
@@ -4534,29 +4888,79 @@ function switchAdminTab(
 }
 
 
-function loadAdminApplications(
+async function loadAdminApplications(
   level
 ){
 
-  document
-    .getElementById(
+  const table =
+    document.getElementById(
       'adminTableArea'
-    )
-    .innerHTML =
+    );
+
+
+  if (table) {
+
+    table.innerHTML =
       '<div style="padding:25px;text-align:center;">กำลังโหลดรายการ...</div>';
 
+  }
 
-  google.script.run
-    .withSuccessHandler(
-      renderAdminTable
-    )
-    .withFailureHandler(
-      handleAdminError
-    )
-    .getAdminApplications(
-      STATE.adminToken,
-      level
+
+  try {
+
+    const result =
+      await apiPostAndWait(
+        'getAdminApplications',
+        {
+          token:
+            STATE.adminToken,
+
+          level:
+            level
+        },
+        {
+          maxAttempts:
+            15,
+
+          initialDelay:
+            150,
+
+          maxDelay:
+            700,
+
+          timeoutMessage:
+            'โหลดรายการผู้สมัครไม่สำเร็จ'
+        }
+      );
+
+
+    if (
+      !result ||
+      !result.success
+    ){
+
+      throw new Error(
+        result &&
+        result.message
+          ? result.message
+          : 'โหลดรายการผู้สมัครไม่สำเร็จ'
+      );
+
+    }
+
+
+    renderAdminTable(
+      result
     );
+
+
+  } catch (error) {
+
+    handleAdminError(
+      error
+    );
+
+  }
 
 }
 
@@ -4650,13 +5054,11 @@ function renderAdminTable(result){
               </td>
 
               <td>
-                <td>
-  <button
-    class="view-btn"
-    onclick="showDetail('${encodeURIComponent(JSON.stringify(row))}')">
-    ดูข้อมูล
-  </button>
-</td>
+                <button
+                  class="view-btn"
+                  onclick="showDetail('${encodeURIComponent(JSON.stringify(row))}')">
+                  ดูข้อมูล
+                </button>
               </td>
 
             </tr>
@@ -4682,15 +5084,19 @@ function renderAdminTable(result){
  * CITIZEN SEARCH
  * ========================================================= */
 
-function searchCitizen(){
+async function searchCitizen(){
 
   const citizenId =
     value(
       'adminCitizenSearch'
     )
-    .replace(/\D/g,'');
+    .replace(
+      /\D/g,
+      ''
+    );
 
-  if(
+
+  if (
     !/^\d{13}$/.test(
       citizenId
     )
@@ -4710,47 +5116,86 @@ function searchCitizen(){
       'searchResult'
     );
 
+
   box.innerHTML =
     '<div style="padding:15px;text-align:center;color:#718096;">กำลังตรวจสอบ...</div>';
 
 
-  google.script.run
-    .withSuccessHandler(
-      result => {
+  try {
 
-        if(
-          !result.found
-        ){
+    const result =
+      await apiPostAndWait(
+        'adminSearchCitizen',
+        {
+          token:
+            STATE.adminToken,
 
-          box.innerHTML =
-            `
-              <div style="
-                padding:15px;
-                border-radius:12px;
-                background:#fff4f4;
-                color:#b83c43;
-              ">
-                ไม่พบข้อมูลผู้สมัครจากเลขบัตรประชาชนนี้
-              </div>
-            `;
+          citizenId:
+            citizenId
+        },
+        {
+          maxAttempts:
+            12,
 
-          return;
+          initialDelay:
+            150,
+
+          maxDelay:
+            700,
+
+          timeoutMessage:
+            'ค้นหาข้อมูลไม่สำเร็จ'
         }
+      );
 
 
-        showSearchResult(
-          result.data
-        );
+    if (
+      !result ||
+      !result.success
+    ){
 
-      }
-    )
-    .withFailureHandler(
-      handleAdminError
-    )
-    .adminSearchCitizen(
-      STATE.adminToken,
-      citizenId
+      throw new Error(
+        result &&
+        result.message
+          ? result.message
+          : 'ค้นหาข้อมูลไม่สำเร็จ'
+      );
+
+    }
+
+
+    if (
+      !result.found
+    ){
+
+      box.innerHTML =
+        `
+          <div style="
+            padding:15px;
+            border-radius:12px;
+            background:#fff4f4;
+            color:#b83c43;
+          ">
+            ไม่พบข้อมูลผู้สมัครจากเลขบัตรประชาชนนี้
+          </div>
+        `;
+
+      return;
+    }
+
+
+    showSearchResult(
+      result.data
     );
+
+
+  } catch (error) {
+
+    handleAdminError(
+      error
+    );
+
+  }
 
 }
 
